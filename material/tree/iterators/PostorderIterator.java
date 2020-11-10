@@ -3,7 +3,10 @@ package material.tree.iterators;
 import material.Position;
 import material.tree.Tree;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.Stack;
 import java.util.function.Predicate;
 
 /**
@@ -14,33 +17,58 @@ import java.util.function.Predicate;
  */
 public class PostorderIterator<E> implements Iterator<Position<E>> {
 
-    //TODO: Implementar (alumnos)
+    Stack<Position<E>> s;
+    Tree<E> tree;
+    Position<E> next;
+    Set<Position<E>> visited;
 
     public PostorderIterator(Tree<E> tree) {
-        throw new RuntimeException("Not yet implemented");
+        this.s = new Stack<>();
+        this.tree = tree;
+        this.visited = new HashSet<>();
+        if (!tree.isEmpty()) {
+            this.s.push(tree.root());
+            this.next = this.lookForward();
+        }
     }
 
     public PostorderIterator(Tree<E> tree, Position<E> start) {
-        throw new RuntimeException("Not yet implemented");
+        s = new Stack<>();
+        this.tree = tree;
+        this.visited = new HashSet<>();
+        s.push(start);
+        this.next = this.lookForward();
     }
 
     public PostorderIterator(Tree<E> tree, Position<E> start, Predicate<Position<E>> predicate) {
         throw new RuntimeException("Not yet implemented");
     }
 
-
     @Override
     public boolean hasNext() {
-        throw new RuntimeException("Not yet implemented");
+        return this.next != null;
     }
 
     @Override
     public Position<E> next() {
-        throw new RuntimeException("Not yet implemented");
+        Position<E> next = this.next;
+        this.next = this.lookForward();
+        return next;
     }
 
-    @Override
-    public void remove(){
-        throw new RuntimeException("Not yet implemented");
+    private Position<E> lookForward() {
+        if (this.s.isEmpty()) {
+            return null;
+        }
+        Position<E> current = s.peek();
+        for(Position<E> child : this.tree.children(current)) {
+            if (!visited.contains(child)) {
+                s.push(child);
+                return this.lookForward();
+            }
+        }
+        visited.add(current);
+        s.pop();
+        return current;
     }
 }

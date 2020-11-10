@@ -1,20 +1,17 @@
 package material.test.practica1;
 
 import material.linear.ArrayQueue;
-import material.linear.Queue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-class QueueTest {
-    Queue<Integer> queue;
+public class ArrayQueueTest {
+    ArrayQueue<Integer> queue;
     final int MAX=25;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         queue = new ArrayQueue<>();
-//        queue = new LinkedQueue<>();
         for (int i = 0; i < MAX; i++) {
             queue.enqueue(i);
         }
@@ -54,7 +51,7 @@ class QueueTest {
     void testDequeue() {
         int actual = 0;
         while(!queue.isEmpty()){
-            int element = queue.dequeue();
+            int element = (int) queue.dequeue();
             assertEquals(element,actual);
             actual++;
         }
@@ -90,7 +87,7 @@ class QueueTest {
                     //retrieve all new elements
                     int actual = start;
                     while (!queue.isEmpty()) {
-                        int element = queue.dequeue();
+                        int element = (int) queue.dequeue();
                         assertEquals(element, actual);
                         actual++;
                     }

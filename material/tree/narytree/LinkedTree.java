@@ -3,9 +3,7 @@ package material.tree.narytree;
 import material.Position;
 import material.tree.iterators.BFSIterator;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * A linked class for a tree where nodes have an arbitrary number of children.
@@ -228,7 +226,7 @@ public class LinkedTree<E> implements NAryTree<E> {
         return newNode;
     }
 
-    public void remove(Position<E> p) {
+    public E remove(Position<E> p) {
         TreeNode<E> node = checkPosition(p);
         if (node.getParent() != null) {
             Iterator<Position<E>> it = new BFSIterator<>(this, p);
@@ -246,6 +244,7 @@ public class LinkedTree<E> implements NAryTree<E> {
             this.size = 0;
         }
         node.setMyTree(null);
+        return node.getElement();
     }
 
     @Override
@@ -255,8 +254,33 @@ public class LinkedTree<E> implements NAryTree<E> {
 
     @Override
     public void moveSubtree(Position<E> pOrig, Position<E> pDest) throws RuntimeException {
-        //TODO: Practica 2 Ejercicio 1
+        TreeNode<E> nOrig = this.checkPosition(pOrig);
+        TreeNode<E> nDest = this.checkPosition(pDest);
+        if (this.isRoot(pOrig)) {
+            throw new RuntimeException("Root node can't be moved");
+        }
+        else if (nOrig == nDest) {
+            throw new RuntimeException("Both positions are the same");
+        }
+        else if (isAncestor(nOrig, nDest)) {
+            throw new RuntimeException("Target position can't be a sub tree of origin");
+        }
+        nOrig.getParent().getChildren().remove(nOrig);
+        nOrig.setParent(nDest);
+        nDest.getChildren().add(nOrig);
+    };
 
+    private boolean isAncestor (Position<E> pOrig, Position<E> pDest) {
+        Queue<Position<E>> q = new ArrayDeque<>();
+        q.add(pOrig);
+        while (!q.isEmpty()) {
+            Position<E> current = q.poll();
+            if (current.equals(pDest)) {
+                return true;
+            }
+            this.children(current).forEach(q::add);
+        }
+        return false;
     }
 
 }

@@ -4,6 +4,8 @@ import material.Position;
 import material.tree.Tree;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Front iteartor for trees.
@@ -13,31 +15,51 @@ import java.util.Iterator;
  */
 public class FrontIterator<T> implements Iterator<Position<T>> {
 
+    Queue<Position<T>> q;
+    Tree<T> tree;
+    Position<T> next;
 
     public FrontIterator(Tree<T> tree) {
-        throw new RuntimeException("Not yet implemented");
+        this.tree = tree;
+        this.q = new LinkedList<>();
+        if (!tree.isEmpty()) {
+            q.add(tree.root());
+        }
+        this.next = this.lookForward();
     }
 
-
     public FrontIterator(Tree<T> tree, Position<T> node) {
-        throw new RuntimeException("Not yet implemented");
+        this.tree = tree;
+        this.q = new LinkedList<>();
+        q.add(node);
+        this.next = this.lookForward();
     }
 
     @Override
     public boolean hasNext() {
-        throw new RuntimeException("Not yet implemented");
+        return this.next != null;
     }
 
-    /**
-     * This method visits the nodes of a tree by following a breath-first search
-     */
+
     @Override
     public Position<T> next() {
-        throw new RuntimeException("Not yet implemented");
+        Position<T> next = this.next;
+        this.next = this.lookForward();
+        return next;
     }
 
-    @Override
-    public void remove() {
-        throw new RuntimeException("Not yet implemented");
+    private Position<T> lookForward() {
+
+        if (q.isEmpty()) {
+            return null;
+        }
+        Position<T> current = q.poll();
+        if (this.tree.isLeaf(current)) {
+            return current;
+        }
+        for(Position<T> child : this.tree.children(current)) {
+            q.add(child);
+        }
+        return this.lookForward();
     }
 }

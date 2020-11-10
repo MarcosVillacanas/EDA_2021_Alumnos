@@ -4,18 +4,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import usecase.practica2.GameOfThrones;
 
+import java.io.IOException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameOfThronesTest {
     private GameOfThrones got;
-    private String path;
+    private String path = "usecase/practica2/GOT_Families.txt";
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         got = new GameOfThrones();
         got.loadFile(path);
     }
-
 
     @Test
     void testFindHeir() {
@@ -26,14 +27,14 @@ class GameOfThronesTest {
 
     @Test
     void testChangeFamily() {
-        got.changeFamily("Daenerys Targarien", "Eddard Stark");
-        assertTrue(got.areFamily("Daenerys Targarien", "Arya Stark"));
+        got.changeFamily("Daenerys Targaryen", "Eddad Stark");
+        assertTrue(got.areFamily("Daenerys Targaryen", "Arya Stark"));
     }
 
     @Test
     void testAreFamily() {
-        assertTrue(got.areFamily("Arya Stark", "Rob Stark"));
-        assertFalse(got.areFamily("Catelyn Tully", "Aerys Targarien"));
+        assertTrue(got.areFamily("Arya Stark", "Robb Stark"));
+        assertFalse(got.areFamily("Catelyn Tully", "Aerys Targaryen"));
     }
 
 }

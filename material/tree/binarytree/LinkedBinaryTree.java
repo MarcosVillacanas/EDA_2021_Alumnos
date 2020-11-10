@@ -392,7 +392,6 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
 
     @Override
     public void attachLeft(Position<E> p, BinaryTree<E> tree) throws RuntimeException {
-        //TODO: Este metodo depende de que tree sea del mismo tipo que this
         BTNode<E> node = checkPosition(p);
 
         if (tree == this) {
@@ -417,7 +416,6 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
 
     @Override
     public void attachRight(Position<E> p, BinaryTree<E> tree) throws RuntimeException {
-        //TODO: Este metodo depende de que tree sea del mismo tipo que this
         BTNode<E> node = checkPosition(p);
 
         if (tree == this) {
@@ -440,7 +438,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
     }
 
     @Override
-    public boolean isComplete() 
+    public boolean isComplete() {
         for (Position<E> next : this) {
             if (this.isInternal(next) && (!this.hasLeft(next) || !this.hasRight(next)))
                 return false;

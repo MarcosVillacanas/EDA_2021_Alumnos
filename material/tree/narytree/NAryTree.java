@@ -36,7 +36,7 @@ public interface NAryTree<E> extends Tree<E> {
      *
      * @param p the position of the node to be removed.
      */
-    void remove(Position<E> p);
+    E remove(Position<E> p);
 
     /**
      * Moves the node located at pOrig to be a new child of pDest.
