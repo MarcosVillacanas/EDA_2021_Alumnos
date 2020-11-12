@@ -2,6 +2,8 @@ package material.test.practica3;
 
 import material.Position;
 import material.tree.binarytree.*;
+import usecase.practica3.Diameter;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BinaryTreeUtilsTest {
@@ -63,5 +65,13 @@ public class BinaryTreeUtilsTest {
         assertEquals(1, utils.level(pos[0]));
         assertEquals(2, utils.level(pos[2]));
         assertEquals(3, utils.level(pos[4]));
+    }
+
+    @org.junit.jupiter.api.Test
+    void diameter() {
+        Diameter<Integer> diameter = new Diameter<>(this.tree);
+        assertEquals(4, diameter.diameter());
+        assertEquals(2, diameter.diameter(pos[3], pos[4]));
+        assertEquals(0, diameter.diameter(pos[0], pos[0]));
     }
 }

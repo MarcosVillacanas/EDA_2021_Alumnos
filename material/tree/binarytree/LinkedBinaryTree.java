@@ -20,6 +20,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
 
         private T element;
         private BTNode<T> left, right, parent;
+        //myTree
 
         /**
          * Main constructor.
@@ -327,13 +328,13 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
 
         BTNode<E> copyNode1 = new BTNode<>(node1.element, node1.parent, node1.left, node1.right);
 
-        node1.parent = node2.parent == node1 ? node2 : node2.parent;
-        node1.left = node2.left == node1 ? node2 : node2.left;
-        node1.right = node2.right == node1 ? node2 : node2.right;
+        node1.parent = (node2.parent == node1)? node2 : node2.parent;
+        node1.left = (node2.left == node1)? node2 : node2.left;
+        node1.right = (node2.right == node1)? node2 : node2.right;
 
-        node2.parent = copyNode1.parent == node2 ? node1 : copyNode1.parent;
-        node2.left = copyNode1.left == node2 ? node1 : copyNode1.left;
-        node2.right = copyNode1.right == node2 ? node1 : copyNode1.right;
+        node2.parent = (copyNode1.parent == node2)? node1 : copyNode1.parent;
+        node2.left = (copyNode1.left == node2)? node1 : copyNode1.left;
+        node2.right = (copyNode1.right == node2)? node1 : copyNode1.right;
 
         if (node1.parent != null) {
             if (node1.parent.left == node2) {
