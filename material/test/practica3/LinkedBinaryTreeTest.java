@@ -1,31 +1,32 @@
-package material.test.practica2;
+package material.test.practica3;
 
 import material.Position;
-import material.tree.narytree.LinkedTree;
+import material.tree.binarytree.BinaryTree;
+import material.tree.binarytree.LinkedBinaryTree;
+
+import java.util.Iterator;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class LinkedTreeTest {
+public class LinkedBinaryTreeTest {
 
-    private LinkedTree<Integer> tree;
+    private LinkedBinaryTree<Integer> tree;
     private Position<Integer>[] pos;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        tree = new LinkedTree<>();
-        pos = new Position[12];
+        tree = new LinkedBinaryTree<>();
+        pos = new Position[9];
         pos[0] = tree.addRoot(0);
-        pos[1] = tree.add(1, pos[0]);
-        pos[2] = tree.add(2, pos[0]);
-        pos[3] = tree.add(3, pos[0]);
-        pos[4] = tree.add(4, pos[0]);
-        pos[5] = tree.add(5, pos[1]);
-        pos[6] = tree.add(6, pos[2]);
-        pos[7] = tree.add(7, pos[2]);
-        pos[8] = tree.add(8, pos[3]);
-        pos[9] = tree.add(9, pos[7]);
-        pos[10] = tree.add(10, pos[7]);
-        pos[11] = tree.add(11, pos[7]);
+        pos[1] = tree.insertLeft(pos[0], 1);
+        pos[2] = tree.insertRight(pos[0], 2);
+        pos[3] = tree.insertLeft(pos[1], 3);
+        pos[4] = tree.insertLeft(pos[2], 4);
+        pos[5] = tree.insertRight(pos[2], 5);
+        pos[6] = tree.insertLeft(pos[4], 6);
+        pos[7] = tree.insertRight(pos[4], 7);
+        pos[8] = tree.insertRight(pos[7], 8);
     }
 
     @org.junit.jupiter.api.AfterEach
@@ -35,9 +36,9 @@ class LinkedTreeTest {
 
     @org.junit.jupiter.api.Test
     void size() {
-        assertEquals(12, tree.size());
+        assertEquals(9, tree.size());
         tree.remove(pos[2]);
-        assertEquals(6, tree.size());
+        assertEquals(3, tree.size());
         tree.remove(pos[0]);
         assertEquals(0, tree.size());
     }
@@ -52,7 +53,7 @@ class LinkedTreeTest {
     @org.junit.jupiter.api.Test
     void isInternal() {
         for (int i = 0; i < pos.length; i++) {
-            if (i == 5 || i == 6 || i == 9 || i == 10 || i == 11 || i == 8 || i == 4) {
+            if (i == 3 || i == 6 || i == 8 || i == 5) {
                 assertFalse(tree.isInternal(pos[i]));
             } else {
                 assertTrue(tree.isInternal(pos[i]));
@@ -63,7 +64,7 @@ class LinkedTreeTest {
     @org.junit.jupiter.api.Test
     void isLeaf() {
         for (int i = 0; i < pos.length; i++) {
-            if (i == 5 || i == 6 || i == 9 || i == 10 || i == 11 || i == 8 || i == 4) {
+            if (i == 3 || i == 6 || i == 8 || i == 5) {
                 assertTrue(tree.isLeaf(pos[i]));
             } else {
                 assertFalse(tree.isLeaf(pos[i]));
@@ -97,12 +98,12 @@ class LinkedTreeTest {
 
     @org.junit.jupiter.api.Test
     void parent() {
-        for (int i = 1; i <= 4; i++) {
-            assertEquals(pos[0], tree.parent(pos[i]));
-        }
-        for (int i = 6; i <= 7; i++) {
-            assertEquals(pos[2], tree.parent(pos[i]));
-        }
+
+        assertEquals(pos[0], tree.parent(pos[1]));
+        assertEquals(pos[0], tree.parent(pos[2]));
+
+        assertEquals(pos[2], tree.parent(pos[4]));
+        assertEquals(pos[2], tree.parent(pos[5]));
     }
 
     @org.junit.jupiter.api.Test
@@ -117,19 +118,19 @@ class LinkedTreeTest {
         int n = 0;
         for (Position<Integer> child : tree.children(pos[0])) {
             assertEquals(pos[0], tree.parent(child));
-            assertTrue(child == pos[1] || child == pos[2] || child == pos[3] || child == pos[4]);
+            assertTrue(child == pos[1] || child == pos[2]);
             n++;
         }
-        assertEquals(4, n);
+        assertEquals(2, n);
         n = 0;
         for (Position<Integer> child : tree.children(pos[7])) {
             assertEquals(pos[7], tree.parent(child));
-            assertTrue(child == pos[9] || child == pos[10] || child == pos[11]);
+            assertTrue(child == pos[8]);
             n++;
         }
-        assertEquals(3, n);
+        assertEquals(1, n);
         n = 0;
-        for (Position<Integer> child : tree.children(pos[9])) {
+        for (Position<Integer> child : tree.children(pos[5])) {
             n++;
         }
         assertEquals(0, n);
@@ -152,45 +153,44 @@ class LinkedTreeTest {
     void addRootExcept() {
         RuntimeException thrown = assertThrows(RuntimeException.class,
                 () -> tree.addRoot(100));
-        assertEquals("Tree already has a root", thrown.getMessage());
+        assertEquals("The tree already has a root", thrown.getMessage());
     }
 
     @org.junit.jupiter.api.Test
     void swapElements() {
-        tree.swapElements(pos[1], pos[0]);
+        tree.swap(pos[1], pos[0]);
         assertEquals(1, (int) tree.root().getElement());
-        assertEquals(0, (int) pos[0].getElement());
-        assertEquals(pos[1], tree.root());
-        assertNotEquals(pos[0], tree.root());
+        assertEquals(1, (int) pos[0].getElement());
+        assertEquals(0, (int) pos[1].getElement());
+        assertNotEquals(pos[1], tree.root());
+        assertEquals(pos[0], tree.root());
     }
 
     @org.junit.jupiter.api.Test
-    void add() {
-        Position<Integer> p100 = tree.add(100, pos[0]);
-        assertEquals(pos[0], tree.parent(p100));
+    void insert() {
+        Position<Integer> p100 = tree.insertLeft(pos[7], 100);
+        assertEquals(pos[7], tree.parent(p100));
         int n = 0;
         for (Position<Integer> child : tree.children(pos[0])) {
             n++;
         }
-        assertEquals(5, n);
-        Position<Integer> p200 = tree.add(200, pos[9]);
-        assertEquals(pos[9], tree.parent(p200));
-        assertTrue(tree.isInternal(pos[9]));
+        assertEquals(2, n);
+        Position<Integer> p200 = tree.insertRight(pos[5], 200);
+        assertEquals(pos[5], tree.parent(p200));
+        assertTrue(tree.isInternal(pos[5]));
     }
 
     @org.junit.jupiter.api.Test
     void remove() {
         tree.remove(pos[2]);
-        assertEquals(6, tree.size());
+        assertEquals(3, tree.size());
         RuntimeException thrown;
-        for (int i = 6; i <= 11; i++) {
-            if (i == 8) continue;
+        for (int i = 4; i <= 8; i++) {
             int finI = i;
             thrown = assertThrows(RuntimeException.class,
                     () -> tree.parent(pos[finI]));
             assertEquals("The node is not from this tree", thrown.getMessage());
         }
-
     }
 
     @org.junit.jupiter.api.Test
@@ -203,41 +203,32 @@ class LinkedTreeTest {
     }
 
     @org.junit.jupiter.api.Test
-    void moveSubtree() {
-        tree.moveSubtree(pos[7], pos[3]);
-        assertEquals(tree.parent(pos[7]), pos[3]);
-        for (Position<Integer> p : tree.children(pos[2])) {
-            assertNotEquals(pos[7], p);
+    void subtree() {
+
+        BinaryTree<Integer> newTree = new LinkedBinaryTree<>();
+        Position<Integer> [] newTrePos = new Position[6];
+        newTrePos[0] = newTree.addRoot(2);
+        newTrePos[1] = newTree.insertLeft(newTrePos[0], 4);
+        newTrePos[2] = newTree.insertRight(newTrePos[0], 5);
+        newTrePos[3] = newTree.insertLeft(newTrePos[1], 6);
+        newTrePos[4] = newTree.insertRight(newTrePos[1], 7);
+        newTrePos[5] = newTree.insertRight(newTrePos[4], 8);
+
+        Iterator<Position<Integer>> iteNewTree = newTree.iterator();
+        String result = "";
+        while (iteNewTree.hasNext()) {
+            result += iteNewTree.next().getElement();
         }
-        boolean found = false;
-        for (Position<Integer> p : tree.children(pos[3])) {
-            if (p == pos[7]) {
-                found = true;
-                break;
-            }
+
+        BinaryTree<Integer> test = tree.subTree(pos[2]);
+
+        Iterator<Position<Integer>> iteTest = test.iterator();
+        String resultTest = "";
+        while (iteTest.hasNext()) {
+            resultTest += iteTest.next().getElement();
         }
-        assertTrue(found);
-    }
 
-    @org.junit.jupiter.api.Test
-    void moveSubtreeExcept_Root() {
-        RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> tree.moveSubtree(pos[0], pos[8]));
-        assertEquals("Root node can't be moved", thrown.getMessage());
-    }
-
-    @org.junit.jupiter.api.Test
-    void moveSubtreeExcept_Subtree() {
-        RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> tree.moveSubtree(pos[2], pos[10]));
-        assertEquals("Target position can't be a sub tree of origin", thrown.getMessage());
-    }
-
-    @org.junit.jupiter.api.Test
-    void moveSubtreeExcept_Subtree_SamePositions() {
-        RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> tree.moveSubtree(pos[4], pos[4]));
-        assertEquals("Both positions are the same", thrown.getMessage());
+        assertEquals(result, resultTest);
     }
 
 }

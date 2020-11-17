@@ -22,6 +22,10 @@ public class LinkedQueue<E> implements Queue{
         public void setPrevious(Node<E> previous) {
             this.previous = previous;
         }
+
+        public Node<E> getPrevious() {
+            return this.previous;
+        }
     }
 
     private Node<E> head;
@@ -46,44 +50,33 @@ public class LinkedQueue<E> implements Queue{
 
     @Override
     public Object front() {
-
-        if (this.isEmpty()) {
-            throw new RuntimeException("Queue is empty");
+        if (!this.isEmpty()) {
+            return this.head.element;
         }
-
-        return this.head.getElement();
+        return null;
     }
 
     @Override
     public void enqueue(Object element) {
-
-        Node<E> elem = new Node<>((E)element, null);
-
-        if (this.isEmpty()) {
-            this.head = elem;
+        Node<E> node =  new Node(element, null);
+        if (!this.isEmpty()) {
+            this.tail.setPrevious(node);
         }
         else {
-            this.tail.setPrevious(elem);
+            this.head = node;
         }
-        this.tail = elem;
+        this.tail = node;
         this.size++;
     }
 
     @Override
-    public Object dequeue() {
-
-        if (this.isEmpty()) {
-            throw new RuntimeException("Queue is empty");
+    public Object dequeue() throws RuntimeException{
+        if (!this.isEmpty()) {
+            Object o = this.head.element;
+            this.head = this.head.getPrevious();
+            this.size--;
+            return o;
         }
-
-        E element = this.head.getElement();
-        this.head = this.head.previous;
-        this.size--;
-
-        if (this.size() == 0) { // solo había un elemento
-            this.tail = null;
-        }
-
-        return element;
+        throw new RuntimeException("Queue is empty");
     }
 }

@@ -82,4 +82,6 @@ public interface Tree<E> extends Iterable<Position<E>> {
      * @throws RuntimeException if the tree already has a root
      */
     Position<E> addRoot(E e) throws RuntimeException;
+
+    int level();
 }

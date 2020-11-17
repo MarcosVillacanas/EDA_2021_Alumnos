@@ -1,12 +1,11 @@
 package material.tree.binarytree;
 
+import javafx.geometry.Pos;
 import material.Position;
+import material.tree.iterators.BFSIterator;
 import material.tree.iterators.InorderBinaryTreeIterator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @param <E>
@@ -15,11 +14,11 @@ import java.util.List;
  */
 public class LinkedBinaryTree<E> implements BinaryTree<E> {
 
-
     protected class BTNode<T> implements Position<T> {
 
         private T element;
         private BTNode<T> left, right, parent;
+        private LinkedBinaryTree<E> myTree;
         //myTree
 
         /**
@@ -30,11 +29,12 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
          * @param left    left child of this node
          * @param right   right child of this node
          */
-        public BTNode(T element, BTNode<T> parent, BTNode<T> left, BTNode<T> right) {
+        public BTNode(T element, BTNode<T> parent, BTNode<T> left, BTNode<T> right, LinkedBinaryTree<E> tree) {
             setElement(element);
             setParent(parent);
             setLeft(left);
             setRight(right);
+            setMyTree(tree);
         }
 
         /**
@@ -109,9 +109,14 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
         public final void setParent(BTNode<T> v) {
             parent = v;
         }
+
+        public LinkedBinaryTree<E> getMyTree () { return this.myTree; }
+
+        public void setMyTree (LinkedBinaryTree<E> tree) { this.myTree = tree; }
     }
 
     private BTNode<E> root;
+    private int size;
 
     /**
      * Creates an empty binary tree.
@@ -120,343 +125,284 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
         root = null;
     }
 
-    @Override
-    public int size() {
-        int size = 0;
-        for (Position<E> p : this) {
-            size++;
+    private BTNode<E> checkPosition (Position<E> p) throws RuntimeException {
+        if (p == null || ! (p instanceof BTNode)) {
+            throw new RuntimeException("Invalid position");
         }
-        return size;
-    }
-
-
-    @Override
-    public boolean isEmpty() {
-        return (root == null);
-    }
-
-
-    @Override
-    public boolean isInternal(Position<E> v) {
-        checkPosition(v);
-        return (hasLeft(v) || hasRight(v));
-    }
-
-
-    @Override
-    public boolean isLeaf(Position<E> p) {
-        return !isInternal(p);
-    }
-
-
-    @Override
-    public boolean isRoot(Position<E> p) {
-        checkPosition(p);
-        return (p == root());
-    }
-
-
-    @Override
-    public boolean hasLeft(Position<E> p) {
-        BTNode<E> node = checkPosition(p);
-        return (node.getLeft() != null);
-    }
-
-
-    @Override
-    public boolean hasRight(Position<E> p) {
-        BTNode<E> node = checkPosition(p);
-        return (node.getRight() != null);
-    }
-
-
-    @Override
-    public Position<E> root() throws RuntimeException {
-        if (root == null) {
-            throw new RuntimeException("The tree is empty");
+        BTNode<E> node = (BTNode) p;
+        if (node.getMyTree() != this) {
+            throw new RuntimeException("The node is not from this tree");
         }
-        return root;
+        return node;
     }
 
     @Override
     public Position<E> left(Position<E> p) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-        Position<E> leftPos = node.getLeft();
-        if (leftPos == null) {
-            throw new RuntimeException("No left child");
+        BTNode<E> node = this.checkPosition(p);
+        if (this.hasLeft(node)) {
+            return node.getLeft();
         }
-        return leftPos;
+        else {
+            throw new RuntimeException("This node has not left child");
+        }
     }
-
 
     @Override
     public Position<E> right(Position<E> p) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-        Position<E> rightPos = node.getRight();
-        if (rightPos == null) {
-            throw new RuntimeException("No right child");
+        BTNode<E> node = this.checkPosition(p);
+        if (this.hasRight(node)) {
+            return node.getRight();
         }
-        return rightPos;
-    }
-
-
-    @Override
-    public Position<E> parent(Position<E> p) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-        Position<E> parentPos = node.getParent();
-        if (parentPos == null) {
-            throw new RuntimeException("No parent");
+        else {
+            throw new RuntimeException("This node has not right child");
         }
-        return parentPos;
-    }
-
-
-    @Override
-    public Iterable<? extends Position<E>> children(Position<E> p) {
-        List<Position<E>> children = new ArrayList<>();
-        if (hasLeft(p)) {
-            children.add(left(p));
-        }
-        if (hasRight(p)) {
-            children.add(right(p));
-        }
-        return Collections.unmodifiableCollection(children);
     }
 
     @Override
-    public Iterator<Position<E>> iterator() {
-        return new InorderBinaryTreeIterator<>(this);
+    public boolean hasLeft(Position<E> p) {
+        BTNode<E> node = this.checkPosition(p);
+        return node.getLeft() != null;
     }
 
+    @Override
+    public boolean hasRight(Position<E> p) {
+        BTNode<E> node = this.checkPosition(p);
+        return node.getRight() != null;
+    }
 
     @Override
     public E replace(Position<E> p, E e) {
-        BTNode<E> node = checkPosition(p);
-        E temp = p.getElement();
+        BTNode<E> node = this.checkPosition(p);
+        E oldElem = node.getElement();
         node.setElement(e);
-        return temp;
+        return oldElem;
     }
 
     @Override
     public Position<E> sibling(Position<E> p) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-        BTNode<E> parentPos = node.getParent();
-        if (parentPos != null) {
-            BTNode<E> sibPos;
-            BTNode<E> leftPos = parentPos.getLeft();
-            if (leftPos == node) {
-                sibPos = parentPos.getRight();
-            } else {
-                sibPos = parentPos.getLeft();
+        BTNode<E> node = this.checkPosition(p);
+        if (node.equals(this.root())) {
+            throw new RuntimeException("The root does not have a sibling");
+        }
+        else {
+            BTNode<E> parent = node.getParent();
+            BTNode<E> sibling = (parent.getLeft() == node)? parent.getRight() : parent.getLeft();
+            if (sibling != null) {
+                return sibling;
             }
-            if (sibPos != null) {
-                return sibPos;
+            else {
+                throw new RuntimeException("This node does not have a sibling");
             }
         }
-        throw new RuntimeException("No sibling");
-    }
-
-    @Override
-    public Position<E> addRoot(E e) throws RuntimeException {
-        if (!isEmpty()) {
-            throw new RuntimeException("Tree already has a root");
-        }
-        root = new BTNode<>(e, null, null, null);
-        return root;
     }
 
     @Override
     public Position<E> insertLeft(Position<E> p, E e) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-        Position<E> leftPos = node.getLeft();
-        if (leftPos != null) {
-            throw new RuntimeException("Node already has a left child");
+        BTNode<E> parent = this.checkPosition(p);
+        if (this.hasLeft(parent)) {
+            throw new RuntimeException("This node already has a left child");
         }
-        BTNode<E> newNode = new BTNode<>(e, node, null, null);
-        node.setLeft(newNode);
-        return newNode;
+        parent.setLeft(new BTNode<>(e, parent, null, null, this));
+        this.size++;
+        return parent.getLeft();
     }
 
     @Override
     public Position<E> insertRight(Position<E> p, E e) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-        Position<E> rightPos = node.getRight();
-        if (rightPos != null) {
-            throw new RuntimeException("Node already has a right child");
+        BTNode<E> parent = this.checkPosition(p);
+        if (this.hasRight(parent)) {
+            throw new RuntimeException("This node already has a right child");
         }
-        BTNode<E> newNode = new BTNode<>(e, node, null, null);
-        node.setRight(newNode);
-        return newNode;
+        parent.setRight(new BTNode<>(e, parent, null, null, this));
+        this.size++;
+        return parent.getRight();
     }
-
 
     @Override
     public E remove(Position<E> p) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-        BTNode<E> leftPos = node.getLeft();
-        BTNode<E> rightPos = node.getRight();
-        if (leftPos != null && rightPos != null) {
-            throw new RuntimeException("Cannot remove node with two children");
+        BTNode<E> node = this.checkPosition(p);
+        if (node.equals(this.root())) {
+            this.root = null;
         }
-        //the only child of v, if any, null otherwise
-        BTNode<E> child = leftPos != null ? leftPos : rightPos;
-
-        if (node == root) { // v is the root
-            if (child != null) {
-                child.setParent(null);
-            }
-            root = child;
-        } else { // v is not the root
+        else {
             BTNode<E> parent = node.getParent();
-            if (node == parent.getLeft()) {
-                parent.setLeft(child);
-            } else {
-                parent.setRight(child);
+            if (parent.getLeft() == node) {
+                parent.setLeft(null);
             }
-            if (child != null) {
-                child.setParent(parent);
+            else {
+                parent.setRight(null);
             }
         }
-        return p.getElement();
+        Iterator<Position<E>> ite = new BFSIterator<>(this, node);
+        while (ite.hasNext()) {
+            Position<E> aux = ite.next();
+            BTNode<E> next = this.checkPosition(aux);
+            next.setMyTree(null);
+            this.size--;
+        }
+        return node.getElement();
     }
-
 
     @Override
     public void swap(Position<E> p1, Position<E> p2) {
-        BTNode<E> node1 = checkPosition(p1);
-        BTNode<E> node2 = checkPosition(p2);
-
-        BTNode<E> copyNode1 = new BTNode<>(node1.element, node1.parent, node1.left, node1.right);
-
-        node1.parent = (node2.parent == node1)? node2 : node2.parent;
-        node1.left = (node2.left == node1)? node2 : node2.left;
-        node1.right = (node2.right == node1)? node2 : node2.right;
-
-        node2.parent = (copyNode1.parent == node2)? node1 : copyNode1.parent;
-        node2.left = (copyNode1.left == node2)? node1 : copyNode1.left;
-        node2.right = (copyNode1.right == node2)? node1 : copyNode1.right;
-
-        if (node1.parent != null) {
-            if (node1.parent.left == node2) {
-                node1.parent.left = node1;
-            } else {
-                node1.parent.right = node1;
-            }
-        } else {
-            this.root = node1;
-        }
-
-        if (node2.parent != null) {
-            if (node2.parent.left == node1) {
-                node2.parent.left = node2;
-            } else {
-                node2.parent.right = node2;
-            }
-        } else {
-            root = node2;
-        }
-
-        if (this.hasLeft(node1)) {
-            node1.left.parent = node1;
-        }
-        if (this.hasRight(node1)) {
-            node1.right.parent = node1;
-        }
-        if (this.hasLeft(node2)) {
-            node2.left.parent = node2;
-        }
-        if (this.hasRight(node2)) {
-            node2.right.parent = node2;
-        }
+        BTNode<E> node1 = this.checkPosition(p1);
+        BTNode<E> node2 = this.checkPosition(p2);
+        E temp = node1.getElement();
+        node1.setElement(node2.getElement());
+        node2.setElement(temp);
     }
 
+    private int copyTree (Position<E> originPoint, BinaryTree<E> originTree,
+                           Position<E> newTreePoint, BinaryTree<E> newTree) {
+
+        int copySize = 0;
+
+        Queue<Position<E>> originPositions = new LinkedList<>();
+        Queue<Position<E>> newTreePositions = new LinkedList<>();
+
+        originPositions.add(originPoint);
+        newTreePositions.add(newTreePoint);
+
+        while (!originPositions.isEmpty()) {
+
+            Position<E> currentOrigin = originPositions.poll();
+            Position<E> currentNewTree = newTreePositions.poll();
+            copySize++;
+
+            if (originTree.hasLeft(currentOrigin)) {
+                newTreePositions.add(newTree.insertLeft(currentNewTree, originTree.left(currentOrigin).getElement()));
+                originPositions.add(originTree.left(currentOrigin));
+            }
+            if (originTree.hasRight(currentOrigin)) {
+                newTreePositions.add(newTree.insertRight(currentNewTree, originTree.right(currentOrigin).getElement()));
+                originPositions.add(originTree.right(currentOrigin));
+            }
+        }
+        return copySize;
+    }
 
     @Override
     public BinaryTree<E> subTree(Position<E> v) {
-        BTNode<E> newRoot = checkPosition(v);
+        BTNode<E> node = this.checkPosition(v);
+        BinaryTree<E> newTree = new LinkedBinaryTree<>();
 
-        if (newRoot == root) {
-            root = null;
-        } else {
-            if (newRoot.parent.left == newRoot)
-                newRoot.parent.left = null;
-            else
-                newRoot.parent.right = null;
-        }
-
-        newRoot.parent = null;
-
-        LinkedBinaryTree<E> tree = new LinkedBinaryTree<>();
-        tree.root = newRoot;
-        return tree;
+        this.copyTree(node, this, newTree.addRoot(node.getElement()), newTree);
+        return newTree;
     }
 
     @Override
     public void attachLeft(Position<E> p, BinaryTree<E> tree) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-
-        if (tree == this) {
-            throw new RuntimeException("Cannot attach a tree over himself");
+        BTNode<E> node = this.checkPosition(p);
+        if (this.hasLeft(node)) {
+            throw new RuntimeException("The node already has a left child");
         }
-        if (this.hasLeft(p)) {
-            throw new RuntimeException("Node already has a left child");
-        }
-
-
-        if (tree != null && !tree.isEmpty()) {
-            //Check position will fail if tree is not an instance of LinkedBinaryTree
-            BTNode<E> r = checkPosition(tree.root());
-            node.setLeft(r);
-            r.setParent(node);
-
-            //The source tree will be left empty
-            LinkedBinaryTree<E> lbt = (LinkedBinaryTree<E>) tree; //safe cast, checkPosition would fail first
-            lbt.root = null;
-        }
+        size += this.copyTree(tree.root(), tree, node.getLeft(), this);
     }
 
     @Override
     public void attachRight(Position<E> p, BinaryTree<E> tree) throws RuntimeException {
-        BTNode<E> node = checkPosition(p);
-
-        if (tree == this) {
-            throw new RuntimeException("Cannot attach a tree over himself");
+        BTNode<E> node = this.checkPosition(p);
+        if (this.hasRight(node)) {
+            throw new RuntimeException("The node already has a right child");
         }
-        if (this.hasRight(p)) {
-            throw new RuntimeException("Node already has a right child");
-        }
-
-        if (tree != null && !tree.isEmpty()) {
-            //Check position will fail if tree is not an instance of LinkedBinaryTree
-            BTNode<E> r = checkPosition(tree.root());
-            node.setRight(r);
-            r.setParent(node);
-
-            //The source tree will be left empty
-            LinkedBinaryTree<E> lbt = (LinkedBinaryTree<E>) tree; //safe cast, checkPosition would fail first
-            lbt.root = null;
-        }
+        size += this.copyTree(tree.root(), tree, node.getRight(), this);
     }
 
     @Override
     public boolean isComplete() {
-        for (Position<E> next : this) {
-            if (this.isInternal(next) && (!this.hasLeft(next) || !this.hasRight(next)))
-                return false;
-        }
-        return true;
+        return (this.level() * 2) - 1 == this.size();
     }
 
-    // Auxiliary methods
-
-    /**
-     * If v is a good binary tree node, cast to BTPosition, else throw exception
-     */
-    private BTNode<E> checkPosition(Position<E> p) {
-        if (p == null || !(p instanceof BTNode)) {
-            throw new RuntimeException("The position is invalid");
+    @Override
+    public int level() {
+        HashMap<Position<E>, Integer> levels = new HashMap<>();
+        int maxLevel = 0;
+        if (!this.isEmpty()) {
+            Queue<Position<E>> queue = new LinkedList<>();
+            queue.add(this.root());
+            while (!queue.isEmpty()) {
+                Position<E> p = queue.poll();
+                int currentLevel = (this.isRoot(p))? 1 :  levels.get(this.parent(p)) + 1;
+                maxLevel = Math.max(maxLevel, currentLevel);
+                levels.put(p, currentLevel);
+                for (Position<E> child : this.children(p)) {
+                    queue.add(child);
+                }
+            }
         }
-        return (BTNode<E>) p;
+        return maxLevel;
     }
 
+    @Override
+    public int size() {
+        return this.size;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.size() == 0;
+    }
+
+    @Override
+    public Position<E> root() throws RuntimeException {
+        if (this.isEmpty()) {
+            throw new RuntimeException("The tree is empty");
+        }
+        return this.root;
+    }
+
+    @Override
+    public Position<E> parent(Position<E> v) throws RuntimeException {
+        BTNode<E> node = this.checkPosition(v);
+        if (node.equals(this.root())) {
+            throw new RuntimeException("The node has not parent");
+        }
+        return node.getParent();
+    }
+
+    @Override
+    public Iterable<? extends Position<E>> children(Position<E> v) {
+        BTNode<E> node = this.checkPosition(v);
+        LinkedList<Position<E>> l = new LinkedList<>();
+        if (this.hasLeft(node)) {
+            l.add(node.getLeft());
+        }
+        if (this.hasRight(node)) {
+            l.add(node.getRight());
+        }
+        return l;
+    }
+
+    @Override
+    public boolean isInternal(Position<E> v) {
+        BTNode<E> node = this.checkPosition(v);
+        return !isLeaf(node);
+    }
+
+    @Override
+    public boolean isLeaf(Position<E> v) throws RuntimeException {
+        BTNode<E> node = this.checkPosition(v);
+        return ! (this.hasLeft(node) || this.hasRight(node));
+    }
+
+    @Override
+    public boolean isRoot(Position<E> v) {
+        BTNode<E> node = this.checkPosition(v);
+        return node.getParent() == null;
+    }
+
+    @Override
+    public Position<E> addRoot(E e) throws RuntimeException {
+        if (!this.isEmpty()) {
+            throw new RuntimeException("The tree already has a root");
+        }
+        this.root = new BTNode<>(e, null, null, null, this);
+        this.size = 1;
+        return this.root;
+    }
+
+    @Override
+    public Iterator<Position<E>> iterator() {
+        return new BFSIterator<>(this);
+    }
 }

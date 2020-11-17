@@ -1,6 +1,7 @@
 package material.tree.narytree;
 
 import material.Position;
+import material.tree.Tree;
 import material.tree.iterators.BFSIterator;
 
 import java.util.*;
@@ -33,7 +34,7 @@ public class LinkedTree<E> implements NAryTree<E> {
          * @param p the parent of the node
          * @param c the list of children of the node
          */
-        public TreeNode(LinkedTree<T> t, T e, TreeNode<T> p, List<TreeNode<T>> c) {
+        public TreeNode(T e, TreeNode<T> p, List<TreeNode<T>> c, LinkedTree<T> t) {
             this.element = e;
             this.parent = p;
             this.children = c;
@@ -112,175 +113,213 @@ public class LinkedTree<E> implements NAryTree<E> {
     private TreeNode<E> root; // The root of the tree
     private int size; // The number of nodes in the tree
 
-    /**
-     * Creates an empty tree.
-     */
-    public LinkedTree() {
-        root = null;
-        size = 0;
+    private TreeNode<E> checkPosition(Position<E> p) {
+        if (p == null || !(p instanceof TreeNode)) {
+            throw new RuntimeException("Invalid position");
+        }
+        TreeNode<E> node = (TreeNode<E>) p;
+        if (node.getMyTree() != this) {
+            throw new RuntimeException("The node is not from this tree");
+        }
+        return node;
+    }
+
+    @Override
+    public E replace(Position<E> p, E e) {
+        TreeNode<E> node = this.checkPosition(p);
+        E oldElement = node.getElement();
+        node.setElement(e);
+        return oldElement;
+    }
+
+    @Override
+    public void swapElements(Position<E> p1, Position<E> p2) {
+        TreeNode<E> node1 = this.checkPosition(p1);
+        TreeNode<E> node2 = this.checkPosition(p2);
+
+        if (node1.equals(node2)) {
+            throw new RuntimeException("Both positions are the same");
+        }
+        else {
+            if (node1.equals(this.root())) {
+                TreeNode<E> node2Parent = node2.getParent();
+
+                node2Parent.getChildren().remove(node2);
+                node2Parent.getChildren().add(node1);
+                node2.setParent(null);
+                this.root = node2;
+
+                node1.setParent(node2Parent);
+            }
+            else if (node2.equals(this.root())) {
+                TreeNode<E> node1Parent = node1.getParent();
+
+                node1Parent.getChildren().remove(node1);
+                node1Parent.getChildren().add(node2);
+                node1.setParent(null);
+                this.root = node1;
+
+                node2.setParent(node1Parent);
+            }
+            else {
+                TreeNode<E> node1Parent = node1.getParent();
+
+                node1Parent.getChildren().remove(node1);
+                node1Parent.getChildren().add(node2);
+                node1.setParent(node2.getParent());
+
+                node2.getParent().getChildren().remove(node2);
+                node2.getParent().getChildren().add(node1);
+                node2.setParent(node1Parent);
+            }
+        }
+    }
+
+    @Override
+    public Position<E> add(E element, Position<E> p) {
+        TreeNode<E> parent = this.checkPosition(p);
+        TreeNode<E> child = new TreeNode<>(element, parent, new LinkedList<>(), this);
+        parent.getChildren().add(child);
+        this.size++;
+        return child;
+    }
+
+    @Override
+    public E remove(Position<E> p) {
+        TreeNode<E> node = this.checkPosition(p);
+        if (this.root().equals(node)) {
+            this.root = null;
+            this.size = 0;
+        }
+        else {
+            node.getParent().getChildren().remove(node);
+            Iterator<Position<E>> ite = new BFSIterator<>(this, node);
+            while (ite.hasNext()) {
+                Position<E> next = ite.next();
+                TreeNode<E> descendant = this.checkPosition(next);
+                descendant.setMyTree(null);
+                this.size--;
+            }
+        }
+        return node.getElement();
+    }
+
+    @Override
+    public void moveSubtree(Position<E> pOrig, Position<E> pDest) throws RuntimeException {
+        TreeNode<E> nodeOrig = this.checkPosition(pOrig);
+        TreeNode<E> nodeDest = this.checkPosition(pDest);
+
+        if (nodeOrig.equals(this.root()) || nodeOrig.equals(this.root())) {
+            throw new RuntimeException("Root node can't be moved");
+        }
+
+        if (nodeOrig.equals(nodeDest)) {
+            throw new RuntimeException("Both positions are the same");
+        }
+
+        if (this.isAncestor(nodeOrig, nodeDest)) {
+            throw new RuntimeException("Target position can't be a sub tree of origin");
+        }
+
+        nodeDest.getChildren().add(nodeOrig);
+        nodeOrig.getParent().getChildren().remove(nodeOrig);
+        nodeOrig.setParent(nodeDest);
+    }
+
+    private boolean isAncestor(TreeNode<E> nodeOrig, TreeNode<E> nodeDest) {
+        Iterator<Position<E>> ite = new BFSIterator<>(this, nodeOrig);
+        while (ite.hasNext()) {
+            Position<E> next = ite.next();
+            if (nodeDest.equals(next)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public int size() {
-        return size;
+        return this.size;
     }
 
     @Override
     public boolean isEmpty() {
-        return (size == 0);
-    }
-
-    @Override
-    public boolean isInternal(Position<E> v) {
-        return !isLeaf(v);
-    }
-
-    @Override
-    public boolean isLeaf(Position<E> p) {
-        TreeNode<E> node = checkPosition(p);
-        return (node.getChildren() == null) || (node.getChildren().isEmpty());
-    }
-
-    @Override
-    public boolean isRoot(Position<E> p) {
-        TreeNode<E> node = checkPosition(p);
-        return (node == this.root());
+        return this.size == 0;
     }
 
     @Override
     public Position<E> root() throws RuntimeException {
-        if (root == null) {
+        if (this.isEmpty()) {
             throw new RuntimeException("The tree is empty");
         }
-        return root;
+        return this.root;
     }
 
     @Override
-    public Position<E> parent(Position<E> p) throws RuntimeException {
-        TreeNode<E> node = checkPosition(p);
-        Position<E> parentPos = node.getParent();
-        if (parentPos == null) {
+    public Position<E> parent(Position<E> v) throws RuntimeException {
+        TreeNode<E> node = this.checkPosition(v);
+        if (this.root().equals(node)) {
             throw new RuntimeException("The node has not parent");
         }
-        return parentPos;
+        return node.getParent();
     }
 
     @Override
-    public Iterable<? extends Position<E>> children(Position<E> p) {
-        TreeNode<E> node = checkPosition(p);
+    public Iterable<? extends Position<E>> children(Position<E> v) {
+        TreeNode<E> node = this.checkPosition(v);
         return node.getChildren();
     }
 
+    @Override
+    public boolean isInternal(Position<E> v) {
+        return !this.isLeaf(v);
+    }
 
-    public E replace(Position<E> p, E e) {
-        TreeNode<E> node = checkPosition(p);
-        E temp = p.getElement();
-        node.setElement(e);
-        return temp;
+    @Override
+    public boolean isLeaf(Position<E> v) throws RuntimeException {
+        TreeNode<E> node = this.checkPosition(v);
+        return node.getChildren().isEmpty();
+    }
+
+    @Override
+    public boolean isRoot(Position<E> v) {
+        TreeNode<E> node = this.checkPosition(v);
+        return this.root().equals(node);
     }
 
     @Override
     public Position<E> addRoot(E e) throws RuntimeException {
-        if (!isEmpty()) {
-            throw new IllegalStateException("Tree already has a root");
+        if (!this.isEmpty()) {
+            throw new RuntimeException("Tree already has a root");
         }
-        size = 1;
-        root = new TreeNode<E>(this, e, null, new ArrayList<>());
-        return root;
+        this.root = new TreeNode<>(e, null, new LinkedList<>(), this);
+        this.size++;
+        return this.root;
     }
 
-    public void swapElements(Position<E> p1, Position<E> p2) {
-        TreeNode<E> node1 = checkPosition(p1);
-        TreeNode<E> node2 = checkPosition(p2);
-        E temp = p2.getElement();
-        node2.setElement(p1.getElement());
-        node1.setElement(temp);
-    }
-
-    /**
-     * Validates the given position, casting it to TreeNode if valid
-     *
-     * @param p the position to be converted
-     * @return the position casted to TreeNode
-     * @throws IllegalStateException if the position is not valid
-     */
-    private TreeNode<E> checkPosition(Position<E> p)
-            throws IllegalStateException {
-        if (p == null || !(p instanceof TreeNode)) {
-            throw new IllegalStateException("The position is invalid");
-        }
-        TreeNode<E> aux = (TreeNode<E>) p;
-
-        if (aux.getMyTree() != this) {
-            throw new IllegalStateException("The node is not from this tree");
-        }
-        return aux;
-    }
-
-    public Position<E> add(E element, Position<E> p) {
-        TreeNode<E> parent = checkPosition(p);
-        TreeNode<E> newNode = new TreeNode<E>(this, element, parent, new ArrayList<>());
-        List<TreeNode<E>> l = parent.getChildren();
-        l.add(newNode);
-        size++;
-        return newNode;
-    }
-
-    public E remove(Position<E> p) {
-        TreeNode<E> node = checkPosition(p);
-        if (node.getParent() != null) {
-            Iterator<Position<E>> it = new BFSIterator<>(this, p);
-            int cont = 0;
-            while (it.hasNext()) {
-                TreeNode<E> next = checkPosition(it.next());
-                next.setMyTree(null);
-                cont++;
+    @Override
+    public int level() {
+        HashMap<Position<E>, Integer> levels = new HashMap<>();
+        int maxLevel = 0;
+        if (!this.isEmpty()) {
+            Queue<Position<E>> queue = new LinkedList<>();
+            queue.add(this.root());
+            while (!queue.isEmpty()) {
+                Position<E> p = queue.poll();
+                int currentLevel = (this.isRoot(p))? 1 :  levels.get(this.parent(p)) + 1;
+                maxLevel = Math.max(maxLevel, currentLevel);
+                levels.put(p, currentLevel);
+                for (Position<E> child : this.children(p)) {
+                    queue.add(child);
+                }
             }
-            size = size - cont;
-            TreeNode<E> parent = node.getParent();
-            parent.getChildren().remove(node);
-        } else {
-            this.root = null;
-            this.size = 0;
         }
-        node.setMyTree(null);
-        return node.getElement();
+        return maxLevel;
     }
 
     @Override
     public Iterator<Position<E>> iterator() {
         return new BFSIterator<>(this);
-    }
-
-    @Override
-    public void moveSubtree(Position<E> pOrig, Position<E> pDest) throws RuntimeException {
-        TreeNode<E> nOrig = this.checkPosition(pOrig);
-        TreeNode<E> nDest = this.checkPosition(pDest);
-        if (this.isRoot(pOrig)) {
-            throw new RuntimeException("Root node can't be moved");
-        }
-        else if (nOrig == nDest) {
-            throw new RuntimeException("Both positions are the same");
-        }
-        else if (isAncestor(nOrig, nDest)) {
-            throw new RuntimeException("Target position can't be a sub tree of origin");
-        }
-        nOrig.getParent().getChildren().remove(nOrig);
-        nOrig.setParent(nDest);
-        nDest.getChildren().add(nOrig);
-    };
-
-    private boolean isAncestor (Position<E> pOrig, Position<E> pDest) {
-        Queue<Position<E>> q = new ArrayDeque<>();
-        q.add(pOrig);
-        while (!q.isEmpty()) {
-            Position<E> current = q.poll();
-            if (current.equals(pDest)) {
-                return true;
-            }
-            this.children(current).forEach(q::add);
-        }
-        return false;
     }
 
 }

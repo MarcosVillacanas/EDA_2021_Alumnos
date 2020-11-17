@@ -20,11 +20,11 @@ public class DoubleLinkedList<E> implements List<E> {
         /**
          * Constructor
          */
-        public DNode(DNode<T> newPrev, DNode<T> newNext, T elem, DoubleLinkedList<T> l) {
-            prev = newPrev;
-            next = newNext;
-            element = elem;
-            myList = l;
+        public DNode(DNode<T> prev, DNode<T> next, T elem, DoubleLinkedList<T> myList) {
+            this.prev = prev;
+            this.next = next;
+            this.element = elem;
+            this.myList = myList;
         }
 
         @Override
@@ -108,13 +108,12 @@ public class DoubleLinkedList<E> implements List<E> {
      * @throws RuntimeException
      */
     private DNode<E> checkPosition(Position<E> p) throws RuntimeException {
-        if (p == null || !(p instanceof DNode)) {
-            throw new RuntimeException("The position is either null or not an instance of DNode");
+        if (p==null || !(p instanceof DNode)) {
+            throw new RuntimeException("Invalid position");
         }
-
-        DNode<E> node = (DNode<E>) p;
-        if (this != node.getMyList()) {
-            throw new RuntimeException("The position refers to a node not in this list");
+        DNode<E> node = (DNode<E>) (p);
+        if (node.myList != this) {
+            throw new RuntimeException("Position does not belong to this list");
         }
         return node;
     }
@@ -134,7 +133,7 @@ public class DoubleLinkedList<E> implements List<E> {
     @Override
     public Position<E> first() throws RuntimeException {
         if (this.isEmpty()) {
-            throw new RuntimeException("List is empty");
+            throw new RuntimeException("Empty list does not have first element");
         }
         return this.header;
     }
@@ -143,45 +142,43 @@ public class DoubleLinkedList<E> implements List<E> {
     @Override
     public Position<E> last() throws RuntimeException {
         if (this.isEmpty()) {
-            throw new RuntimeException("List is empty");
+            throw new RuntimeException("Empty list does not have last element");
         }
         return this.trailer;
     }
 
     @Override
     public Position<E> prev(Position<E> p) throws RuntimeException {
-        DNode<E> node = checkPosition(p);
-        DNode<E> prev = node.getPrev();
-        if (prev == null) {
-            throw new RuntimeException("Cannot advance past the beginning of the list");
+        DNode<E> node = this.checkPosition(p);
+        if (node.getPrev() == null) {
+            throw new RuntimeException("Previous node not found");
         }
-        return prev;
+        return node.getPrev();
     }
 
     @Override
     public Position<E> next(Position<E> p) throws RuntimeException {
-        DNode<E> node = checkPosition(p);
-        DNode<E> next = node.getNext();
-        if (next == null) {
-            throw new RuntimeException("Cannot advance past the end of the list");
+        DNode<E> node = this.checkPosition(p);
+        if (node.getNext() == null) {
+            throw new RuntimeException("Next node not found");
         }
-        return next;
+        return node.getNext();
     }
 
     
     @Override
     public Position<E> addBefore(Position<E> p, E element) throws RuntimeException {
-        DNode<E> node = checkPosition(p);
+        DNode<E> node = this.checkPosition(p);
         DNode<E> newNode;
-        if (node == this.header) {
-            newNode = new DNode<E>(null, node, element, this);
-            node.setPrev(newNode);
+        if (node == this.first()) {
+            newNode = new DNode<>(null, this.header, element, this);
             this.header = newNode;
-        } else {
-            newNode = new DNode<E>(node.getPrev(), node, element, this);
-            node.getPrev().setNext(newNode);
-            node.setPrev(newNode);
         }
+        else {
+            newNode = new DNode<>(node.getPrev(), node, element, this);
+            node.getPrev().setNext(newNode);
+        }
+        node.setPrev(newNode);
         this.size++;
         return newNode;
     }
@@ -189,82 +186,80 @@ public class DoubleLinkedList<E> implements List<E> {
     
     @Override
     public Position<E> addAfter(Position<E> p, E element) throws RuntimeException {
-        DNode<E> node = checkPosition(p);
+        DNode<E> node = this.checkPosition(p);
         DNode<E> newNode;
-        if (node == this.trailer) {
-            newNode = new DNode<E>(node, null, element, this);
-            node.setNext(newNode);
+        if (node == this.last()) {
+            newNode = new DNode<>(this.trailer, null, element, this);
             this.trailer = newNode;
-        } else {
-            newNode = new DNode<E>(node, node.getNext(), element, this);
-            node.getNext().setPrev(newNode);
-            node.setNext(newNode);
         }
-        size++;
+        else {
+            newNode = new DNode<>(node, node.getNext(), element, this);
+            node.getNext().setPrev(newNode);
+        }
+        node.setNext(newNode);
+        this.size++;
         return newNode;
     }
 
     @Override
     public Position<E> addFirst(E element) {
-        DNode<E> newNode;
-        if (this.isEmpty()) {
-            newNode = new DNode<E>(null, null, element, this);
-            this.header = newNode;
-            this.trailer = newNode;
-        } else {
-            newNode = new DNode<E>(null, this.header, element, this);
+        DNode<E> newNode = new DNode<>(null, this.header, element, this);
+        if (!this.isEmpty()) {
             this.header.setPrev(newNode);
-            this.header = newNode;
         }
-        size++;
+        else {
+            this.trailer = newNode;
+        }
+        this.size++;
+        this.header = newNode;
         return newNode;
     }
 
     @Override
     public Position<E> addLast(E element) {
-        DNode<E> newNode;
-        if (this.isEmpty()) {
-            newNode = new DNode<E>(null, null, element, this);
-            this.header = newNode;
-            this.trailer = newNode;
-        } else {
-            newNode = new DNode<E>(this.trailer, null, element, this);
+        DNode<E> newNode = new DNode<>(this.trailer, null, element, this);
+        if (!this.isEmpty()) {
             this.trailer.setNext(newNode);
-            this.trailer = newNode;
         }
-        size++;
+        else {
+            this.header = newNode;
+        }
+        this.size++;
+        this.trailer = newNode;
         return newNode;
     }
 
     
     @Override
     public E remove(Position<E> p) throws RuntimeException {
-        DNode<E> node = checkPosition(p);
-        E elem = node.getElement();
-        if (this.trailer == this.header) {
-            this.trailer = null;
-            this.header = null;
-        } else if (node == this.header) {
-            this.header = this.header.getNext();
-        } else if (node == this.trailer) {
-            this.trailer = this.trailer.getPrev();
-        } else {
-            DNode<E> nodePrev = node.getPrev();
-            DNode<E> nodeNext = node.getNext();
-            nodePrev.setNext(nodeNext);
-            nodeNext.setPrev(nodePrev);
+        DNode<E> node = this.checkPosition(p);
+        if (node == this.header) {
+            this.header = node.getNext();
+            if (this.header != null) {
+                this.header.setPrev(null);
+            }
         }
-        size--;
-        return elem;
+        else if (node == this.trailer) {
+            this.trailer = node.getPrev();
+            if (this.trailer != null) {
+                this.trailer.setNext(null);
+            }
+        }
+        else {
+            node.getPrev().setNext(node.getNext());
+            node.getNext().setPrev(node.getPrev());
+        }
+        this.size--;
+        return node.getElement();
     }
 
     
     @Override
     public E set(Position<E> p, E element) throws RuntimeException {
-        DNode<E> node = checkPosition(p);
-        E oldElt = node.getElement();
+        DNode<E> node = this.checkPosition(p);
+        E oldElement = node.getElement();
         node.setElement(element);
-        return oldElt;
+        return oldElement;
     }
 
     // Convenience methods
@@ -275,8 +270,8 @@ public class DoubleLinkedList<E> implements List<E> {
      * @return TRUE if p is the first position, FALSE otherwise
      */
     public boolean isFirst(Position<E> p) throws RuntimeException {
-        DNode<E> v = checkPosition(p);
-        return v == header;
+        DNode<E> node = this.checkPosition(p);
+        return node == this.first();
     }
 
     /**
@@ -286,8 +281,8 @@ public class DoubleLinkedList<E> implements List<E> {
      * @return TRUE if p is the last position, FALSE otherwise
      */
     public boolean isLast(Position<E> p) throws RuntimeException {
-        DNode<E> v = checkPosition(p);
-        return v == trailer;
+        DNode<E> node = this.checkPosition(p);
+        return node == this.last();
     }
 
     /**
@@ -296,14 +291,34 @@ public class DoubleLinkedList<E> implements List<E> {
      * @param a the first position to swap
      * @param b the second position to swap
      */
-    public void swapElements(Position<E> a, Position<E> b)
-            throws RuntimeException {
-        DNode<E> pA = checkPosition(a);
-        DNode<E> pB = checkPosition(b);
-        E temp = pA.getElement();
-        pA.setElement(pB.getElement());
-        pB.setElement(temp);
+    public void swapElements(Position<E> a, Position<E> b) throws RuntimeException {
+        DNode<E> nodeA = this.checkPosition(a);
+        DNode<E> nodeB = this.checkPosition(b);
+
+        if (nodeA.getPrev() != null) {
+            nodeA.getPrev().setNext(nodeB);
+        }
+        else {
+            this.header = nodeB;
+        }
+        if (nodeA.getNext() != null) {
+            nodeA.getNext().setPrev(nodeB);
+        }
+        else {
+            this.trailer = nodeB;
+        }
+
+        if (nodeB.getPrev() != null) {
+            nodeB.getPrev().setNext(nodeA);
+        }
+        else {
+            this.header = nodeA;
+        }
+        if (nodeB.getNext() != null) {
+            nodeB.getNext().setPrev(nodeA);
+        }
+        else {
+            this.trailer = nodeA;
+        }
     }
-
-
 }

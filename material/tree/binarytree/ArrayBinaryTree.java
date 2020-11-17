@@ -11,7 +11,7 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
 
         private E element;
         private int left, right, pos, parent;
-        // myTree
+        private ArrayBinaryTree<E> myTree;
 
         /**
          * Main constructor.
@@ -21,12 +21,13 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
          * @param left    left child of this node
          * @param right   right child of this node
          */
-        public BTNode(E element, int parent, int pos, int left, int right) {
+        public BTNode(E element, int parent, int pos, int left, int right, ArrayBinaryTree<E> myTree) {
             setElement(element);
             setParent(parent);
             setPos(pos);
             setLeft(left);
             setRight(right);
+            setMyTree(myTree);
         }
 
         /**
@@ -119,13 +120,33 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         public final void setParent(int v) {
             parent = v;
         }
+
+        /**
+         * Returns the parent of this position.
+         *
+         * @return the parent of this position
+         */
+        public final ArrayBinaryTree<E> getMyTree() {
+            return myTree;
+        }
+
+        /**
+         * Sets the parent of this position
+         *
+         * @param v the new parent of this position
+         */
+        public final void setMyTree(ArrayBinaryTree<E> v) {
+            myTree = v;
+        }
     }
 
+    private int maxSize;
     private BTNode<E>[] tree;
     // starts at 1, not at 0
 
-    public ArrayBinaryTree() {
-        this.tree = new BTNode[17];
+    public ArrayBinaryTree(int maxSize) {
+        this.tree = new BTNode[maxSize];
+        this.maxSize = maxSize;
     }
 
     @Override
@@ -179,6 +200,15 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         throw new RuntimeException("No sibling");
     }
 
+    private void checkDimension(int pos) {
+        if (pos >= maxSize) {
+            maxSize *= 2;
+            BTNode<E>[] biggerTree = new BTNode[maxSize];
+            System.arraycopy(tree, 0, biggerTree, 0, tree.length);
+            tree = biggerTree;
+        }
+    }
+
     @Override
     public Position<E> insertLeft(Position<E> p, E e) throws RuntimeException {
         BTNode<E> node = this.checkPosition(p);
@@ -189,7 +219,8 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         }
 
         leftChild = 2 * node.getPos();
-        tree[leftChild] = new BTNode<>(e, node.getPos(), leftChild, -1, -1);
+        this.checkDimension(leftChild);
+        tree[leftChild] = new BTNode<>(e, node.getPos(), leftChild, -1, -1, this);
 
         return tree[leftChild];
     }
@@ -204,7 +235,8 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         }
 
         rightChild = (2 * node.getPos()) + 1;
-        tree[rightChild] = new BTNode<>(e, node.getPos(), rightChild, -1, -1);
+        this.checkDimension(rightChild);
+        tree[rightChild] = new BTNode<>(e, node.getPos(), rightChild, -1, -1, this);
 
         return tree[rightChild];
     }
@@ -240,7 +272,7 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         BTNode<E> node = this.checkPosition(v);
         remove(node);
 
-        BinaryTree<E> newTree = new ArrayBinaryTree<>();
+        BinaryTree<E> newTree = new ArrayBinaryTree<>(maxSize);
         Position<E> attachedRoot = newTree.addRoot(node.getElement());
 
         moveTree(node, attachedRoot, this, newTree);
@@ -393,8 +425,28 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         if (tree[1] != null) {
             throw new RuntimeException("Tree already has a root");
         }
-        tree[1] = new BTNode<>(e, -1, 1, -1, -1);
+        tree[1] = new BTNode<>(e, -1, 1, -1, -1, this);
         return tree[1];
+    }
+
+    @Override
+    public int level() {
+        HashMap<Position<E>, Integer> levels = new HashMap<>();
+        int maxLevel = 0;
+        if (!this.isEmpty()) {
+            Queue<Position<E>> queue = new LinkedList<>();
+            queue.add(this.root());
+            while (!queue.isEmpty()) {
+                Position<E> p = queue.poll();
+                int currentLevel = (this.isRoot(p))? 1 :  levels.get(this.parent(p)) + 1;
+                maxLevel = Math.max(maxLevel, currentLevel);
+                levels.put(p, currentLevel);
+                for (Position<E> child : this.children(p)) {
+                    queue.add(child);
+                }
+            }
+        }
+        return maxLevel;
     }
 
     @Override
@@ -404,6 +456,10 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         if (p == null || !(p instanceof ArrayBinaryTree.BTNode)) {
             throw new RuntimeException("The position is invalid");
         }
-        return (BTNode<E>) p;
+        BTNode<E> node = (BTNode<E>) p;
+        if (node.getMyTree() != this) {
+            throw new RuntimeException("The position does not belong to this tree");
+        }
+        return node;
     }
 }

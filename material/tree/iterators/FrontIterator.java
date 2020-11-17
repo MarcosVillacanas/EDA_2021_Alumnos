@@ -10,56 +10,39 @@ import java.util.Queue;
 /**
  * Front iteartor for trees.
  *
- * @param <T>
+ * @param <E>
  * @author jvelez, JD. Quintana
  */
-public class FrontIterator<T> implements Iterator<Position<T>> {
+public class FrontIterator<E> implements Iterator<Position<E>> {
 
-    Queue<Position<T>> q;
-    Tree<T> tree;
-    Position<T> next;
+    Queue<Position<E>> queue;
+    Tree<E> myTree;
 
-    public FrontIterator(Tree<T> tree) {
-        this.tree = tree;
-        this.q = new LinkedList<>();
-        if (!tree.isEmpty()) {
-            q.add(tree.root());
+    public FrontIterator(Tree<E> tree){
+        this.queue = new LinkedList<>();
+        this.myTree = tree;
+        if (!this.myTree.isEmpty()) {
+            this.queue.add(this.myTree.root());
         }
-        this.next = this.lookForward();
     }
 
-    public FrontIterator(Tree<T> tree, Position<T> node) {
-        this.tree = tree;
-        this.q = new LinkedList<>();
-        q.add(node);
-        this.next = this.lookForward();
+    public FrontIterator(Tree<E> tree, Position<E> pos) {
+        this.queue = new LinkedList<>();
+        this.myTree = tree;
+        this.queue.add(pos);
     }
 
     @Override
     public boolean hasNext() {
-        return this.next != null;
+        return !this.queue.isEmpty();
     }
-
 
     @Override
-    public Position<T> next() {
-        Position<T> next = this.next;
-        this.next = this.lookForward();
-        return next;
-    }
-
-    private Position<T> lookForward() {
-
-        if (q.isEmpty()) {
-            return null;
+    public Position<E> next() {
+        Position<E> current = this.queue.poll();
+        for (Position<E> child : this.myTree.children(current)) {
+            this.queue.add(child);
         }
-        Position<T> current = q.poll();
-        if (this.tree.isLeaf(current)) {
-            return current;
-        }
-        for(Position<T> child : this.tree.children(current)) {
-            q.add(child);
-        }
-        return this.lookForward();
+        return (this.myTree.isLeaf(current))? current : next();
     }
 }

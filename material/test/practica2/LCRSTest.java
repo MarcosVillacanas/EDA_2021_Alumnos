@@ -153,12 +153,12 @@ class LCRSTest {
     void addRootExcept() {
         RuntimeException thrown = assertThrows(RuntimeException.class,
                 () -> tree.addRoot(100));
-        assertEquals("Tree already has a root", thrown.getMessage());
+        assertEquals("The tree already has a root", thrown.getMessage());
     }
 
     @org.junit.jupiter.api.Test
     void swapElements() {
-        tree.swapElements(pos[1], pos[0]);
+        tree.swapElements(pos[0], pos[1]);
         assertEquals(1, (int) tree.root().getElement());
         assertEquals(0, (int) pos[1].getElement());
         assertNotEquals(pos[1], tree.root());

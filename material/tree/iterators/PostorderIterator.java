@@ -3,10 +3,7 @@ package material.tree.iterators;
 import material.Position;
 import material.tree.Tree;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -17,58 +14,46 @@ import java.util.function.Predicate;
  */
 public class PostorderIterator<E> implements Iterator<Position<E>> {
 
-    Stack<Position<E>> s;
-    Tree<E> tree;
-    Position<E> next;
-    Set<Position<E>> visited;
+    Stack<Position<E>> stack;
+    Tree<E> myTree;
+    HashSet<Position<E>> childrenVisited;
 
     public PostorderIterator(Tree<E> tree) {
-        this.s = new Stack<>();
-        this.tree = tree;
-        this.visited = new HashSet<>();
-        if (!tree.isEmpty()) {
-            this.s.push(tree.root());
-            this.next = this.lookForward();
-        }
+        this.stack = new Stack<>();
+        this.myTree = tree;
+        this.childrenVisited = new HashSet<>();
+        this.stack.push(this.myTree.root());
     }
 
-    public PostorderIterator(Tree<E> tree, Position<E> start) {
-        s = new Stack<>();
-        this.tree = tree;
-        this.visited = new HashSet<>();
-        s.push(start);
-        this.next = this.lookForward();
-    }
-
-    public PostorderIterator(Tree<E> tree, Position<E> start, Predicate<Position<E>> predicate) {
-        throw new RuntimeException("Not yet implemented");
+    public PostorderIterator(Tree<E> tree, Position<E> pos) {
+        this.stack = new Stack<>();
+        this.myTree = tree;
+        this.childrenVisited = new HashSet<>();
+        this.stack.push(pos);
     }
 
     @Override
     public boolean hasNext() {
-        return this.next != null;
+        return !this.stack.isEmpty();
     }
 
     @Override
     public Position<E> next() {
-        Position<E> next = this.next;
-        this.next = this.lookForward();
-        return next;
-    }
-
-    private Position<E> lookForward() {
-        if (this.s.isEmpty()) {
-            return null;
+        Position<E> current = this.stack.pop();
+        if (this.myTree.isLeaf(current) || childrenVisited.contains(current)) {
+            return current;
         }
-        Position<E> current = s.peek();
-        for(Position<E> child : this.tree.children(current)) {
-            if (!visited.contains(child)) {
-                s.push(child);
-                return this.lookForward();
+        else {
+            this.stack.push(current);
+            Stack<Position<E>> auxStack = new Stack<>();
+            for (Position<E> child : this.myTree.children(current)) {
+                auxStack.push(child);
             }
+            while (!auxStack.isEmpty()) {
+                this.stack.push(auxStack.pop());
+            }
+            childrenVisited.add(current);
+            return next();
         }
-        visited.add(current);
-        s.pop();
-        return current;
     }
 }

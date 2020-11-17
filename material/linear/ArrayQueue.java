@@ -26,22 +26,19 @@ public class ArrayQueue<E> implements Queue {
     }
 
     @Override
-    public Object front() {
-
-        if (this.isEmpty()) {
-            throw new RuntimeException("Queue is empty");
+    public Object front() throws RuntimeException{
+        if (!this.isEmpty()) {
+            return this.array[this.ini];
         }
-
-        return array[ini];
+        throw new RuntimeException("Queue is empty");
     }
 
     @Override
     public void enqueue(Object element) {
-
-        if (this.size == this.maxSize) {
-            E [] newArray = (E[]) new Object [this.maxSize * 2];
+        if (this.fin == -1) {
+            E[] newArray = (E[]) new Object[this.maxSize * 2];
             System.arraycopy(this.array, this.ini, newArray, 0, this.maxSize - this.ini);
-            System.arraycopy(this.array, 0, newArray, this.maxSize - this.ini, this.ini);
+            System.arraycopy(this.array, 0, newArray, this.maxSize - ini, this.maxSize);
             this.array = newArray;
             this.ini = 0;
             this.fin = this.maxSize;
@@ -49,22 +46,30 @@ public class ArrayQueue<E> implements Queue {
         }
 
         this.array[this.fin] = (E) element;
-        this.fin = (this.fin + 1) % this.maxSize;
+        this.fin = (this.fin + 1) % (this.maxSize);
+
+        if (this.fin == this.ini) {
+            this.fin = -1;
+        }
+
         this.size++;
     }
 
+
     @Override
     public Object dequeue() {
+        if (!this.isEmpty()) {
+            Object o = this.array[this.ini];
 
-        if (this.isEmpty()) {
-            throw new RuntimeException("Queue is empty");
+            if (this.fin == -1) {
+                this.fin = this.ini;
+            }
+
+            this.ini = (this.ini + 1) % (this.maxSize - 1);
+            this.size--;
+            return o;
         }
-
-        E element = array[ini];
-        ini = (ini + 1) % this.maxSize;
-        this.size--;
-
-        return element;
+        throw new RuntimeException("Queue is empty");
     }
 
 }

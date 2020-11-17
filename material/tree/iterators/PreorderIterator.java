@@ -14,70 +14,37 @@ import java.util.function.Predicate;
  */
 public class PreorderIterator<E> implements Iterator<Position<E>> {
 
-    Predicate<Position<E>> predicate;
-    Stack<Position<E>> s;
-    Tree<E> tree;
-    Position<E> next;
-    Set<Position<E>> visited;
+    Queue<Position<E>> queue;
+    Tree<E> myTree;
 
     public PreorderIterator(Tree<E> tree) {
-        this.predicate = null;
-        this.s = new Stack<>();
-        this.tree = tree;
-        this.visited = new HashSet<>();
-        if (!tree.isEmpty()) {
-            this.s.push(tree.root());
-            this.next = this.lookForward();
+        this.queue = new LinkedList<>();
+        this.myTree = tree;
+        if (!this.myTree.isEmpty()) {
+            this.queue.add(this.myTree.root());
         }
     }
 
-    public PreorderIterator(Tree<E> tree, Position<E> start) {
-        this.predicate = null;
-        s = new Stack<>();
-        this.tree = tree;
-        this.visited = new HashSet<>();
-        s.push(start);
-        this.next = this.lookForward();
-    }
-
-    public PreorderIterator(Tree<E> tree, Position<E> start, Predicate<Position<E>> predicate) {
-        this.predicate = predicate;
-        s = new Stack<>();
-        this.tree = tree;
-        this.visited = new HashSet<>();
-        s.push(start);
-        this.next = this.lookForward();
+    public PreorderIterator(Tree<E> tree, Position<E> pos) {
+        this.queue = new LinkedList<>();
+        this.myTree = tree;
+        this.queue.add(pos);
     }
 
     @Override
     public boolean hasNext() {
-        return this.next != null;
+        return !this.queue.isEmpty();
     }
 
     @Override
     public Position<E> next() {
-        Position<E> next = this.next;
-        this.next = this.lookForward();
-        return next;
+        Position<E> current = this.queue.poll();
+        Queue<Position<E>> newQueue = new LinkedList<>();
+        for (Position<E> child : this.myTree.children(current)) {
+            newQueue.add(child);
+        }
+        newQueue.addAll(this.queue);
+        this.queue = newQueue;
+        return current;
     }
-
-    private Position<E> lookForward() {
-        if (this.s.isEmpty()) {
-            return null;
-        }
-        Position<E> current = s.peek();
-        if (!visited.contains(current)) {
-            visited.add(current);
-            return current;
-        }
-        for(Position<E> child : this.tree.children(current)) {
-            if (!visited.contains(child)) {
-                s.push(child);
-                return this.lookForward();
-            }
-        }
-        s.pop();
-        return this.lookForward();
-    }
-
 }

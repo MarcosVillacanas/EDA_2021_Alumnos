@@ -2,7 +2,6 @@ package material.test.practica1;
 
 import material.linear.LinkedQueue;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -59,43 +58,6 @@ class LinkedQueueTest {
         assertTrue(queue.isEmpty());
         RuntimeException runtimeException = Assertions.assertThrows(RuntimeException.class, () -> queue.dequeue());
         assertEquals("Queue is empty", runtimeException.getMessage());
-
-    }
-
-    @org.junit.jupiter.api.Test
-    void testResize() {
-        //assumeTrue reports if the condition is not met and the test is stopped, a stacktrace is reported,
-        //and the test marked as ignored.
-        Assumptions.assumeTrue(queue instanceof LinkedQueue, "Not an instance of ArrayQueue");
-
-        //assumingThat if a test tha only executes in certain conditions
-        //if the condition is not met the test will pass.
-        Assumptions.assumingThat(queue instanceof LinkedQueue,
-                ()->{
-                    int start = 100;
-                    int maxElements = 500;
-
-                    //Empty Queue
-                    while(!queue.isEmpty()) {
-                        queue.dequeue();
-                    }
-
-                    //fill and exceed default capacity
-                    for (int i = 0; i <maxElements ; i++) {
-                        queue.enqueue(i+start);
-                    }
-
-                    //retrieve all new elements
-                    int actual = start;
-                    while (!queue.isEmpty()) {
-                        int element = (int) queue.dequeue();
-                        assertEquals(element, actual);
-                        actual++;
-                    }
-                    RuntimeException runtimeException = Assertions.assertThrows(RuntimeException.class, () -> queue.dequeue());
-                    assertEquals("Queue is empty", runtimeException.getMessage());
-
-                });
 
     }
 }
