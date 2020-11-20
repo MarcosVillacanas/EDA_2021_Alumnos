@@ -3,9 +3,7 @@ package material.tree.iterators;
 import material.Position;
 import material.tree.binarytree.BinaryTree;
 
-import java.util.Deque;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Inorder iteartor for binary trees.
@@ -13,52 +11,53 @@ import java.util.LinkedList;
  * @param <T>
  * @author jvelez, JD. Quintana
  */
-public class InorderBinaryTreeIterator<T> implements Iterator<Position<T>> {
+public class InorderBinaryTreeIterator<E> implements Iterator<Position<E>> {
 
-    private Deque<Position<T>> nodeStack = new LinkedList<>();
-    private final BinaryTree<T> tree;
+    BinaryTree<E> tree;
+    Stack<Position<E>> stack;
+    HashSet<Position<E>> visited;
 
-    public InorderBinaryTreeIterator(BinaryTree<T> tree) {
-        this.tree = tree;
-        if (!tree.isEmpty())
-            goToLastInLeft(tree.root());
-    }
-
-
-    public InorderBinaryTreeIterator(BinaryTree<T> tree, Position<T> node) {
-        this.tree = tree;
-        goToLastInLeft(node);
-    }
-
-    private void goToLastInLeft(Position<T> node) {
-        nodeStack.addFirst(node);
-
-        while (tree.hasLeft(node)) {
-            node = tree.left(node);
-            nodeStack.addFirst(node);
+    public InorderBinaryTreeIterator (BinaryTree<E> bT) {
+        this.tree = bT;
+        this.stack = new Stack<>();
+        if (!this.tree.isEmpty()) {
+            this.stack.push(this.tree.root());
         }
+        this.visited = new HashSet<>();
     }
 
     @Override
     public boolean hasNext() {
-        return (!nodeStack.isEmpty());
-    }
-
-    /**
-     * This method visits the nodes of a tree by following a breath-first search
-     */
-    @Override
-    public Position<T> next() {
-        Position<T> aux = nodeStack.removeFirst();
-        if (tree.hasRight(aux)) {
-            goToLastInLeft(tree.right(aux));
-        }
-
-        return aux;
+        return !this.stack.isEmpty();
     }
 
     @Override
-    public void remove() {
-        throw new UnsupportedOperationException("Not implemented.");
+    public Position<E> next() {
+
+        Position<E> current;
+
+        do {
+            current = this.stack.pop();
+
+            if (this.tree.hasRight(current)) {
+                Position<E> right = this.tree.right(current);
+                if (!visited.contains(right)) {
+                    this.stack.push(right);
+                    this.visited.add(right);
+                }
+            }
+
+            this.stack.push(current);
+
+            if (this.tree.hasLeft(current)) {
+                Position<E> left = this.tree.left(current);
+                if (!visited.contains(left)) {
+                    this.stack.push(left);
+                    this.visited.add(left);
+                }
+            }
+        } while (current != this.stack.peek());
+
+        return this.stack.pop();
     }
 }

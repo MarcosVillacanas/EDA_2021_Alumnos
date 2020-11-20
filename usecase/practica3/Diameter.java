@@ -16,10 +16,8 @@ public class Diameter<E> {
 	 * Determines the longest path between any two nodes
 	 */
 	public int diameter() {
-		Iterator<Position<E>> ite = tree.iterator();
-		int maxDiameter = -1;
-		while (ite.hasNext()) {
-			Position<E> next = ite.next();
+		int maxDiameter = 0;
+		for (Position<E> next : tree) {
 			for (Position<E> next2 : tree) {
 				maxDiameter = Math.max(maxDiameter, diameter(next, next2));
 			}
@@ -32,22 +30,18 @@ public class Diameter<E> {
 	 */
 	public int diameter(Position<E> n1, Position<E> n2) {
 		HashMap<Position<E>, Integer> ancestors = new HashMap<>();
-		Position<E> parent = n1;
-
-		int level = 0;
-		while (!tree.isRoot(parent)) {
-			ancestors.put(parent, level++);
-			parent = tree.parent(parent);
-		}
-		ancestors.put(parent, level);
-
-		level = 0;
-		parent = n2;
-		while (!ancestors.containsKey(parent)) {
-			parent = tree.parent(parent);
-			level++;
+		int hops = 0;
+		while (!n1.equals(tree.root())) {
+			hops++;
+			n1 = tree.parent(n1);
+			ancestors.put(n1, hops);
 		}
 
-		return level + ancestors.get(parent);
+		hops = 0;
+		while (! (ancestors.containsKey(n2) || n2.equals(tree.root()))) {
+			hops++;
+			n2 = tree.parent(n2);
+		}
+		return hops + ancestors.getOrDefault(n2, 0);
 	}
 }

@@ -1,6 +1,7 @@
 package material.map;
 
 import java.util.Iterator;
+import java.util.Random;
 
 public class HashTableMap<K,V> implements Map<K,V> {
 
@@ -30,9 +31,23 @@ public class HashTableMap<K,V> implements Map<K,V> {
     }
 
     private int n;
-    private long scale, shift;
+    private long scale, shift; // A y B en MAD
     private int prime, capacity;
     private HashEntry<K,V> [] bucket;
+    private HashEntry<K,V> AVAILABLE;
+
+    public HashTableMap(int prime, int capacity) {
+        this.n = 0;
+        this.prime = prime;
+        this.capacity = capacity;
+        this.bucket = (HashEntry<K, V>[]) new HashEntry[this.capacity];
+        Random rand = new Random();
+        this.scale = rand.nextInt( prime - 1) + 1;
+        // +1 para que no sea 0, -1 para que no desborde
+        this.shift = rand.nextInt(prime);
+        // Se evite que escale multiplicando por 0, pero se permite que desplaze sumando 0
+        this.AVAILABLE = new HashEntry<>(null, null, this);
+    }
 
     @Override
     public int size() {

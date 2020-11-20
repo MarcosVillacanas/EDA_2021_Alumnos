@@ -296,7 +296,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
         if (this.hasLeft(node)) {
             throw new RuntimeException("The node already has a left child");
         }
-        size += this.copyTree(tree.root(), tree, node.getLeft(), this);
+        size += this.copyTree(tree.root(), tree, this.insertLeft(node, tree.root().getElement()), this);
     }
 
     @Override
@@ -305,7 +305,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
         if (this.hasRight(node)) {
             throw new RuntimeException("The node already has a right child");
         }
-        size += this.copyTree(tree.root(), tree, node.getRight(), this);
+        size += this.copyTree(tree.root(), tree, this.insertRight(node, tree.root().getElement()), this);
     }
 
     @Override

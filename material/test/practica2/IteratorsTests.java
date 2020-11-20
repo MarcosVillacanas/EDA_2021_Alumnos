@@ -1,10 +1,9 @@
 package material.test.practica2;
 
 import material.Position;
-import material.tree.iterators.BFSIterator;
-import material.tree.iterators.FrontIterator;
-import material.tree.iterators.PostorderIterator;
-import material.tree.iterators.PreorderIterator;
+import material.tree.binarytree.BinaryTree;
+import material.tree.binarytree.LinkedBinaryTree;
+import material.tree.iterators.*;
 import material.tree.narytree.LinkedTree;
 
 import java.util.Iterator;
@@ -77,5 +76,49 @@ public class IteratorsTests {
             result += ite.next().getElement();
         }
         assertEquals(result, "51691011728340");
+    }
+
+    @org.junit.jupiter.api.Test
+    void InorderBinaryTreeIterator() {
+        BinaryTree<Integer> bTree = new LinkedBinaryTree<>();
+        Position<Integer> [] bPos = new Position[12];
+        bPos[0] = bTree.addRoot(0);
+        bPos[1] = bTree.insertLeft(bPos[0], 1);
+        bPos[2] = bTree.insertRight(bPos[0], 2);
+        bPos[3] = bTree.insertLeft(bPos[2], 3);
+        bPos[4] = bTree.insertRight(bPos[2], 4);
+        bPos[5] = bTree.insertRight(bPos[3], 5);
+        bPos[6] = bTree.insertLeft(bPos[5], 6);
+        bPos[7] = bTree.insertRight(bPos[5], 7);
+
+
+        Iterator<Position<Integer>> ite = new InorderBinaryTreeIterator<>(bTree);
+        String result = "";
+        while (ite.hasNext()) {
+            result += ite.next().getElement();
+        }
+        assertEquals(result, "10365724");
+    }
+
+    @org.junit.jupiter.api.Test
+    void InorderReverseBinaryTreeIterator() {
+        BinaryTree<Integer> bTree = new LinkedBinaryTree<>();
+        Position<Integer> [] bPos = new Position[12];
+        bPos[0] = bTree.addRoot(0);
+        bPos[1] = bTree.insertLeft(bPos[0], 1);
+        bPos[2] = bTree.insertRight(bPos[0], 2);
+        bPos[3] = bTree.insertLeft(bPos[2], 3);
+        bPos[4] = bTree.insertRight(bPos[2], 4);
+        bPos[5] = bTree.insertRight(bPos[3], 5);
+        bPos[6] = bTree.insertLeft(bPos[5], 6);
+        bPos[7] = bTree.insertRight(bPos[5], 7);
+
+
+        Iterator<Position<Integer>> ite = new InorderReverseBinaryTreeIterator<>(bTree);
+        String result = "";
+        while (ite.hasNext()) {
+            result += ite.next().getElement();
+        }
+        assertEquals(result, "42756301");
     }
 }

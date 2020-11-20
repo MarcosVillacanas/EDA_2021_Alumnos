@@ -2,7 +2,11 @@ package material.test.practica3;
 
 import material.Position;
 import material.tree.binarytree.*;
+import usecase.practica3.ArithmeticEvaluator;
 import usecase.practica3.Diameter;
+
+import java.util.Arrays;
+import java.util.Iterator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -73,5 +77,29 @@ public class BinaryTreeUtilsTest {
         assertEquals(4, diameter.diameter());
         assertEquals(2, diameter.diameter(pos[3], pos[4]));
         assertEquals(0, diameter.diameter(pos[0], pos[0]));
+    }
+
+    @org.junit.jupiter.api.Test
+    void arithmetic() {
+        ArithmeticEvaluator aE = new ArithmeticEvaluator("1-2+4*8+1*5");
+        assertEquals(aE.evaluate(), 36);
+    }
+
+    @org.junit.jupiter.api.Test
+    void levelsIncomplete() {
+        tree.remove(pos[3]);
+        utils.levelsIncomplete().forEach(integer -> assertEquals(2, integer));
+    }
+
+    @org.junit.jupiter.api.Test
+    void levelsComplete() {
+        tree.remove(pos[3]);
+        utils.levelsComplete().forEach(integer -> assertTrue(integer == 1 || integer == 3));
+    }
+
+    @org.junit.jupiter.api.Test
+    void sumBinaryLevels() {
+        Integer[] levels = {0, 2};
+        assertEquals(18, utils.sumBinaryLevels(levels));
     }
 }
