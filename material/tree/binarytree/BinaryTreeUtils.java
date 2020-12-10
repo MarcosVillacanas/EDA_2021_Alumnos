@@ -13,10 +13,7 @@ public class BinaryTreeUtils<E> {
 		this.tree = tree;
 	}
 
-	/**
-	 * Given a tree the method returns a new tree where all left children
-	 * become right children and vice versa
-	 */
+
 	public BinaryTree<E> mirror() {
 
 		BinaryTree<E> newTree = new LinkedBinaryTree<>();
@@ -42,9 +39,7 @@ public class BinaryTreeUtils<E> {
 		}
 		return newTree;
 	}
-	/**
-	 * Determines whether the element e is in the tree or not
-	 */
+
 	public boolean contains (E e) {
 		for (Position<E> p : tree) {
 			if (p.getElement().equals(e)) {
@@ -53,9 +48,7 @@ public class BinaryTreeUtils<E> {
 		}
 		return false;
 	}
-	/**
-	 * Determines the level of a node in the tree (root is located at level 1)
-	 */
+
 	public int level(Position<E> p) {
 		int level = 1;
 		while (!p.equals(tree.root())) {
@@ -180,6 +173,65 @@ public class BinaryTreeUtils<E> {
 		else {
 			return false;
 		}
+	}
+
+	public Iterable<? extends Position<E>> findHalf() {
+		int halfHeight = this.height(this.tree) / 2;
+		LinkedList<Position<E>> halves = new LinkedList<>();
+
+		if (!this.tree.isEmpty()) {
+			Queue<Position<E>> queue = new LinkedList<>();
+			queue.add(this.tree.root());
+			HashMap<Position<E>, Integer> levels = new HashMap<>();
+			levels.put(this.tree.root(), 1);
+
+			while (!queue.isEmpty()) {
+				Position<E> next = queue.poll();
+				int level = levels.get(next);
+
+				if (level == halfHeight) {
+					halves.add(next);
+				}
+				else if (level - halfHeight >= 2) {
+					break;
+				}
+				else if (level < halfHeight) {
+					for (Position<E> child : this.tree.children(next)) {
+						queue.add(child);
+						levels.put(child, level + 1);
+					}
+				}
+			}
+		}
+
+		return halves;
+
+	}
+
+	private int height(BinaryTree<E> tree) {
+		int height = 0;
+
+		if (!tree.isEmpty()) {
+
+			HashMap<Position<E>, Integer> levels = new HashMap<>();
+			levels.put(tree.root(), 1);
+			Queue<Position<E>> queue = new LinkedList<>();
+			queue.add(tree.root());
+
+			while (!queue.isEmpty()) {
+
+				Position<E> next = queue.poll();
+				height = Math.max(height, levels.get(next));
+
+				for (Position<E> child : tree.children(next)) {
+
+					queue.add(child);
+					levels.put(child, levels.get(next) + 1);
+				}
+			}
+		}
+
+		return height;
 	}
 
 }

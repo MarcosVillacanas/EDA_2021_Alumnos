@@ -21,7 +21,7 @@ public interface Map<K,V> extends Iterable<Entry<K,V>>{
 
     public Iterable<K> keys();
 
-    public Iterable<V> value();
+    public Iterable<V> values();
 
     public Iterable<Entry<K,V>> entries();
 

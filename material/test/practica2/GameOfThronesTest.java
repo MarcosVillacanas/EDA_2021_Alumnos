@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GameOfThronesTest {
     private GameOfThrones got;
-    private String path = "usecase/practica2/GOT_Families.txt";
+    private String path = "C:\\Users\\Marcos\\Desktop\\Carrera\\4 Curso\\Primer Cuatrimestre\\Estructuras de Datos Avanzadas\\EDA_2021_Alumnos\\docs\\GOT_Families.txt";
 
     @BeforeEach
     void setUp() throws IOException {

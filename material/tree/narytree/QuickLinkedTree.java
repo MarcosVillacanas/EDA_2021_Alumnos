@@ -1,6 +1,5 @@
 package material.tree.narytree;
 
-import javafx.geometry.Pos;
 import material.Position;
 import material.tree.iterators.BFSIterator;
 
@@ -155,14 +154,10 @@ public class QuickLinkedTree<E> implements NAryTree<E> {
     }
 
     @Override
-    public int size() {
-        return this.size;
-    }
+    public int size() { return this.size; }
 
     @Override
-    public boolean isEmpty() {
-        return this.size == 0;
-    }
+    public boolean isEmpty() { return this.size == 0; }
 
     @Override
     public Position<E> root() throws RuntimeException {
@@ -188,10 +183,7 @@ public class QuickLinkedTree<E> implements NAryTree<E> {
     }
 
     @Override
-    public boolean isInternal(Position<E> v) {
-        TreeNode<E> node = this.checkPosition(v);
-        return !this.isLeaf(node);
-    }
+    public boolean isInternal(Position<E> v) { return !this.isLeaf(v); }
 
     @Override
     public boolean isLeaf(Position<E> v) throws RuntimeException {
@@ -201,7 +193,7 @@ public class QuickLinkedTree<E> implements NAryTree<E> {
 
     @Override
     public boolean isRoot(Position<E> v) {
-        TreeNode<E> node =  this.checkPosition(v);
+        TreeNode<E> node = this.checkPosition(v);
         return node.equals(this.root());
     }
 
@@ -237,7 +229,5 @@ public class QuickLinkedTree<E> implements NAryTree<E> {
     }
 
     @Override
-    public Iterator<Position<E>> iterator() {
-        return new BFSIterator<>(this);
-    }
+    public Iterator<Position<E>> iterator() { return new BFSIterator<>(this); }
 }

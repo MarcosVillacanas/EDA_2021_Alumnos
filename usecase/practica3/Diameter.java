@@ -2,9 +2,7 @@ package usecase.practica3;
 
 import material.Position;
 import material.tree.binarytree.BinaryTree;
-
 import java.util.HashMap;
-import java.util.Iterator;
 
 public class Diameter<E> {
 

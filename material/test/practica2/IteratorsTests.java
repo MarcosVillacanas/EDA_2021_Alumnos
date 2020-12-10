@@ -50,7 +50,7 @@ public class IteratorsTests {
 
     @org.junit.jupiter.api.Test
     void FrontIterator() {
-        Iterator<Position<Integer>> ite = new FrontIterator<>(this.tree);
+        Iterator<Position<Integer>> ite = new LeavesIterator<>(this.tree);
         String result = "";
         while (ite.hasNext()) {
             result += ite.next().getElement();

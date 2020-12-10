@@ -163,14 +163,10 @@ public class LinkedTreeFastLeavesAccess<E> implements NAryTree<E> {
     }
 
     @Override
-    public int size() {
-        return this.size;
-    }
+    public int size() { return this.size; }
 
     @Override
-    public boolean isEmpty() {
-        return this.size == 0;
-    }
+    public boolean isEmpty() { return this.size == 0; }
 
     @Override
     public Position<E> root() throws RuntimeException {
@@ -196,10 +192,7 @@ public class LinkedTreeFastLeavesAccess<E> implements NAryTree<E> {
     }
 
     @Override
-    public boolean isInternal(Position<E> v) {
-        TreeNode<E> node = this.checkPosition(v);
-        return !this.isLeaf(node);
-    }
+    public boolean isInternal(Position<E> v) { return !this.isLeaf(v); }
 
     @Override
     public boolean isLeaf(Position<E> v) throws RuntimeException {
@@ -253,5 +246,8 @@ public class LinkedTreeFastLeavesAccess<E> implements NAryTree<E> {
         return new BFSIterator<>(this);
     }
 
+    public Iterable<? extends Position<E>> leaves () {
+        return this.leaves;
+    }
 
 }

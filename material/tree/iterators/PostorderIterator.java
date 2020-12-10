@@ -40,18 +40,22 @@ public class PostorderIterator<E> implements Iterator<Position<E>> {
     @Override
     public Position<E> next() {
         Position<E> current = this.stack.pop();
+
         if (this.myTree.isLeaf(current) || childrenVisited.contains(current)) {
             return current;
         }
         else {
             this.stack.push(current);
             Stack<Position<E>> auxStack = new Stack<>();
+
             for (Position<E> child : this.myTree.children(current)) {
                 auxStack.push(child);
             }
+
             while (!auxStack.isEmpty()) {
                 this.stack.push(auxStack.pop());
             }
+
             childrenVisited.add(current);
             return next();
         }

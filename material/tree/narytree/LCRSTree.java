@@ -1,6 +1,5 @@
 package material.tree.narytree;
 
-import javafx.geometry.Pos;
 import material.Position;
 import material.tree.Tree;
 import material.tree.iterators.BFSIterator;
@@ -139,13 +138,13 @@ public class LCRSTree<E> implements NAryTree<E> {
                     descendant = descendant.getRightSibling();
                 }
                 descendant.setRightSibling(node.getRightSibling());
-                Iterator<Position<E>> ite = new BFSIterator<>(this, node);
-                while (ite.hasNext()) {
-                    TreeNode<E> next = this.checkPosition(ite.next());
-                    next.setTree(null);
-                    this.size--;
-                }
             }
+        }
+        Iterator<Position<E>> ite = new BFSIterator<>(this, node);
+        while (ite.hasNext()) {
+            TreeNode<E> next = this.checkPosition(ite.next());
+            next.setTree(null);
+            this.size--;
         }
         return node.getElement();
     }
@@ -204,14 +203,10 @@ public class LCRSTree<E> implements NAryTree<E> {
     }
 
     @Override
-    public int size() {
-        return this.size;
-    }
+    public int size() { return this.size; }
 
     @Override
-    public boolean isEmpty() {
-        return this.size == 0;
-    }
+    public boolean isEmpty() { return this.size == 0; }
 
     @Override
     public Position<E> root() throws RuntimeException {
@@ -290,8 +285,5 @@ public class LCRSTree<E> implements NAryTree<E> {
     }
 
     @Override
-    public Iterator<Position<E>> iterator() {
-        return new BFSIterator<>(this);
-    }
-
+    public Iterator<Position<E>> iterator() { return new BFSIterator<>(this); }
 }

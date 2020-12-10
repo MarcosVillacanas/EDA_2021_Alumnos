@@ -46,7 +46,7 @@ public class ArrayQueue<E> implements Queue {
         }
 
         this.array[this.fin] = (E) element;
-        this.fin = (this.fin + 1) % (this.maxSize);
+        this.fin = (this.fin + 1) % this.maxSize;
 
         if (this.fin == this.ini) {
             this.fin = -1;

@@ -1,6 +1,5 @@
 package material.tree.binarytree;
 
-import javafx.geometry.Pos;
 import material.Position;
 import material.tree.iterators.BFSIterator;
 
@@ -14,14 +13,6 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         private int left, right, pos, parent;
         private ArrayBinaryTree<E> myTree;
 
-        /**
-         * Main constructor.
-         *
-         * @param element element stored in this node
-         * @param parent  parent of this node
-         * @param left    left child of this node
-         * @param right   right child of this node
-         */
         public BTNode(E element, int parent, int pos, int left, int right, ArrayBinaryTree<E> myTree) {
             setElement(element);
             setParent(parent);
@@ -31,111 +22,51 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
             setMyTree(myTree);
         }
 
-        /**
-         * Returns the element stored at this node.
-         *
-         * @return the element stored at this node
-         */
         @Override
         public E getElement() {
             return element;
         }
 
-        /**
-         * Sets the element stored at this node.
-         *
-         * @param o the element to be stored
-         */
         public final void setElement(E o) {
             element = o;
         }
 
-        /**
-         * Returns the left child of this node.
-         *
-         * @return left child of this node
-         */
         public final int getLeft() {
             return left;
         }
 
-        /**
-         * Sets the left child of this node.
-         *
-         * @param v the new left child of this node
-         */
         public final void setLeft(int v) {
             left = v;
         }
 
-        /**
-         * Returns the right child of this node.
-         *
-         * @return the right child of this node
-         */
         public final int getRight() {
             return right;
         }
 
-        /**
-         * Sets the right child of this node.
-         *
-         * @param v the new right child of this node
-         */
         public final void setRight(int v) {
             right = v;
         }
 
-        /**
-         * Returns the parent of this position.
-         *
-         * @return the parent of this position
-         */
         public final int getPos() {
             return pos;
         }
 
-        /**
-         * Sets the parent of this position
-         *
-         * @param v the new parent of this position
-         */
         public final void setPos(int v) {
             pos = v;
         }
 
-        /**
-         * Returns the parent of this position.
-         *
-         * @return the parent of this position
-         */
         public final int getParent() {
             return parent;
         }
 
-        /**
-         * Sets the parent of this position
-         *
-         * @param v the new parent of this position
-         */
         public final void setParent(int v) {
             parent = v;
         }
 
-        /**
-         * Returns the parent of this position.
-         *
-         * @return the parent of this position
-         */
         public final ArrayBinaryTree<E> getMyTree() {
             return myTree;
         }
 
-        /**
-         * Sets the parent of this position
-         *
-         * @param v the new parent of this position
-         */
         public final void setMyTree(ArrayBinaryTree<E> v) {
             myTree = v;
         }
@@ -279,8 +210,10 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         node2.setElement(temp);
     }
 
-    private void copyTree (Position<E> originP, BinaryTree<E> originTree,
+    private int copyTree (Position<E> originP, BinaryTree<E> originTree,
                            Position<E> destP, BinaryTree<E> destTree) {
+
+        int copySize = 0;
 
         Queue<Position<E>> origins = new LinkedList<>();
         Queue<Position<E>> destinations = new LinkedList<>();
@@ -291,7 +224,7 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         while (!origins.isEmpty()) {
             Position<E> originCurrent = origins.poll();
             Position<E> destCurrent = destinations.poll();
-            this.size++;
+            copySize++;
 
             if (originTree.hasLeft(originCurrent)) {
                 destinations.add(destTree.insertLeft(destCurrent, this.left(originCurrent).getElement()));
@@ -302,6 +235,8 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
                 origins.add(this.right(originCurrent));
             }
         }
+
+        return copySize;
     }
 
     @Override
@@ -318,7 +253,7 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         if (this.hasLeft(node)) {
             throw new RuntimeException("The node already has left child");
         }
-        this.copyTree(tree.root(), tree, this.insertLeft(node, tree.root().getElement()), this);
+        this.size += this.copyTree(tree.root(), tree, this.insertLeft(node, tree.root().getElement()), this);
     }
 
     @Override
@@ -327,23 +262,17 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
         if (this.hasRight(node)) {
             throw new RuntimeException("The node already has right child");
         }
-        this.copyTree(tree.root(), tree, this.insertRight(node, tree.root().getElement()), this);
+        this.size += this.copyTree(tree.root(), tree, this.insertRight(node, tree.root().getElement()), this);
     }
 
     @Override
-    public boolean isComplete() {
-        return (this.level() * 2) - 1 == this.size();
-    }
+    public boolean isComplete() { return (this.level() * 2) - 1 == this.size(); }
 
     @Override
-    public int size() {
-        return this.size;
-    }
+    public int size() { return this.size; }
 
     @Override
-    public boolean isEmpty() {
-        return this.size == 0;
-    }
+    public boolean isEmpty() { return this.size == 0; }
 
     @Override
     public Position<E> root() throws RuntimeException {
@@ -376,10 +305,7 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
     }
 
     @Override
-    public boolean isInternal(Position<E> v) {
-        BTNode<E> node = this.checkPosition(v);
-        return !isLeaf(node);
-    }
+    public boolean isInternal(Position<E> v) { return !isLeaf(v); }
 
     @Override
     public boolean isLeaf(Position<E> v) throws RuntimeException {
@@ -425,8 +351,5 @@ public class ArrayBinaryTree<E> implements BinaryTree<E> {
     }
 
     @Override
-    public Iterator<Position<E>> iterator() {
-        return new BFSIterator<>(this);
-    }
-
+    public Iterator<Position<E>> iterator() { return new BFSIterator<>(this); }
 }

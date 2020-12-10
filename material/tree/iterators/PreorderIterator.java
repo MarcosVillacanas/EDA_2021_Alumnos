@@ -4,8 +4,6 @@ import material.Position;
 import material.tree.Tree;
 
 import java.util.*;
-import java.util.function.Predicate;
-
 /**
  * Generic preorder iterator for trees.
  *
@@ -39,12 +37,14 @@ public class PreorderIterator<E> implements Iterator<Position<E>> {
     @Override
     public Position<E> next() {
         Position<E> current = this.queue.poll();
-        Queue<Position<E>> newQueue = new LinkedList<>();
+
+        Queue<Position<E>> aux = new LinkedList<>();
         for (Position<E> child : this.myTree.children(current)) {
-            newQueue.add(child);
+            aux.add(child);
         }
-        newQueue.addAll(this.queue);
-        this.queue = newQueue;
+        aux.addAll(this.queue);
+        this.queue = aux;
+
         return current;
     }
 }

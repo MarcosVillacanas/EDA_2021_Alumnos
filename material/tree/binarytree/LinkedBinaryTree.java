@@ -1,17 +1,9 @@
 package material.tree.binarytree;
 
-import javafx.geometry.Pos;
 import material.Position;
 import material.tree.iterators.BFSIterator;
-import material.tree.iterators.InorderBinaryTreeIterator;
-
 import java.util.*;
 
-/**
- * @param <E>
- * @author A. Duarte, J. Vélez
- * @see BinaryTree
- */
 public class LinkedBinaryTree<E> implements BinaryTree<E> {
 
     protected class BTNode<T> implements Position<T> {
@@ -19,16 +11,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
         private T element;
         private BTNode<T> left, right, parent;
         private LinkedBinaryTree<E> myTree;
-        //myTree
 
-        /**
-         * Main constructor.
-         *
-         * @param element element stored in this node
-         * @param parent  parent of this node
-         * @param left    left child of this node
-         * @param right   right child of this node
-         */
         public BTNode(T element, BTNode<T> parent, BTNode<T> left, BTNode<T> right, LinkedBinaryTree<E> tree) {
             setElement(element);
             setParent(parent);
@@ -37,75 +20,35 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
             setMyTree(tree);
         }
 
-        /**
-         * Returns the element stored at this node.
-         *
-         * @return the element stored at this node
-         */
         @Override
         public T getElement() {
             return element;
         }
 
-        /**
-         * Sets the element stored at this node.
-         *
-         * @param o the element to be stored
-         */
         public final void setElement(T o) {
             element = o;
         }
 
-        /**
-         * Returns the left child of this node.
-         *
-         * @return left child of this node
-         */
         public final BTNode<T> getLeft() {
             return left;
         }
 
-        /**
-         * Sets the left child of this node.
-         *
-         * @param v the new left child of this node
-         */
         public final void setLeft(BTNode<T> v) {
             left = v;
         }
 
-        /**
-         * Returns the right child of this node.
-         *
-         * @return the right child of this node
-         */
         public final BTNode<T> getRight() {
             return right;
         }
 
-        /**
-         * Sets the right child of this node.
-         *
-         * @param v the new right child of this node
-         */
         public final void setRight(BTNode<T> v) {
             right = v;
         }
 
-        /**
-         * Returns the parent of this position.
-         *
-         * @return the parent of this position
-         */
         public final BTNode<T> getParent() {
             return parent;
         }
 
-        /**
-         * Sets the parent of this position
-         *
-         * @param v the new parent of this position
-         */
         public final void setParent(BTNode<T> v) {
             parent = v;
         }
@@ -118,9 +61,6 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
     private BTNode<E> root;
     private int size;
 
-    /**
-     * Creates an empty binary tree.
-     */
     public LinkedBinaryTree() {
         root = null;
     }
@@ -142,9 +82,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
         if (this.hasLeft(node)) {
             return node.getLeft();
         }
-        else {
-            throw new RuntimeException("This node has not left child");
-        }
+        throw new RuntimeException("This node has not left child");
     }
 
     @Override
@@ -153,9 +91,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
         if (this.hasRight(node)) {
             return node.getRight();
         }
-        else {
-            throw new RuntimeException("This node has not right child");
-        }
+        throw new RuntimeException("This node has not right child");
     }
 
     @Override
@@ -190,9 +126,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
             if (sibling != null) {
                 return sibling;
             }
-            else {
-                throw new RuntimeException("This node does not have a sibling");
-            }
+            throw new RuntimeException("This node does not have a sibling");
         }
     }
 
@@ -221,10 +155,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
     @Override
     public E remove(Position<E> p) throws RuntimeException {
         BTNode<E> node = this.checkPosition(p);
-        if (node.equals(this.root())) {
-            this.root = null;
-        }
-        else {
+        if (!node.equals(this.root())) {
             BTNode<E> parent = node.getParent();
             if (parent.getLeft() == node) {
                 parent.setLeft(null);
@@ -257,27 +188,26 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
 
         int copySize = 0;
 
-        Queue<Position<E>> originPositions = new LinkedList<>();
-        Queue<Position<E>> newTreePositions = new LinkedList<>();
+        Queue<Position<E>> originQ = new LinkedList<>();
+        Queue<Position<E>> destQ = new LinkedList<>();
 
-        originPositions.add(originPoint);
-        newTreePositions.add(newTreePoint);
+        originQ.add(originPoint);
+        destQ.add(newTreePoint);
 
-        while (!originPositions.isEmpty()) {
-
-            Position<E> currentOrigin = originPositions.poll();
-            Position<E> currentNewTree = newTreePositions.poll();
+        while (!originQ.isEmpty()) {
+            Position<E> originCurrent = originQ.poll();
             copySize++;
 
-            if (originTree.hasLeft(currentOrigin)) {
-                newTreePositions.add(newTree.insertLeft(currentNewTree, originTree.left(currentOrigin).getElement()));
-                originPositions.add(originTree.left(currentOrigin));
+            if (originTree.hasLeft(originCurrent)) {
+                destQ.add(newTree.insertLeft(destQ.poll(), originTree.left(originCurrent).getElement()));
+                originQ.add(originTree.left(originCurrent));
             }
-            if (originTree.hasRight(currentOrigin)) {
-                newTreePositions.add(newTree.insertRight(currentNewTree, originTree.right(currentOrigin).getElement()));
-                originPositions.add(originTree.right(currentOrigin));
+            if (originTree.hasRight(originCurrent)) {
+                destQ.add(newTree.insertRight(destQ.poll(), originTree.right(originCurrent).getElement()));
+                originQ.add(originTree.right(originCurrent));
             }
         }
+
         return copySize;
     }
 
@@ -309,9 +239,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
     }
 
     @Override
-    public boolean isComplete() {
-        return (this.level() * 2) - 1 == this.size();
-    }
+    public boolean isComplete() { return (this.level() * 2) - 1 == this.size(); }
 
     @Override
     public int level() {
@@ -334,14 +262,10 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
     }
 
     @Override
-    public int size() {
-        return this.size;
-    }
+    public int size() { return this.size; }
 
     @Override
-    public boolean isEmpty() {
-        return this.size() == 0;
-    }
+    public boolean isEmpty() { return this.size() == 0; }
 
     @Override
     public Position<E> root() throws RuntimeException {
@@ -374,10 +298,7 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
     }
 
     @Override
-    public boolean isInternal(Position<E> v) {
-        BTNode<E> node = this.checkPosition(v);
-        return !isLeaf(node);
-    }
+    public boolean isInternal(Position<E> v) { return !isLeaf(v); }
 
     @Override
     public boolean isLeaf(Position<E> v) throws RuntimeException {
@@ -402,7 +323,5 @@ public class LinkedBinaryTree<E> implements BinaryTree<E> {
     }
 
     @Override
-    public Iterator<Position<E>> iterator() {
-        return new BFSIterator<>(this);
-    }
+    public Iterator<Position<E>> iterator() { return new BFSIterator<>(this); }
 }

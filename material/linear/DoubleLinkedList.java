@@ -118,12 +118,10 @@ public class DoubleLinkedList<E> implements List<E> {
         return node;
     }
 
-
     @Override
     public int size() {
         return size;
     }
-
 
     @Override
     public boolean isEmpty() {
@@ -137,7 +135,6 @@ public class DoubleLinkedList<E> implements List<E> {
         }
         return this.header;
     }
-
 
     @Override
     public Position<E> last() throws RuntimeException {
@@ -228,7 +225,6 @@ public class DoubleLinkedList<E> implements List<E> {
         this.trailer = newNode;
         return newNode;
     }
-
     
     @Override
     public E remove(Position<E> p) throws RuntimeException {

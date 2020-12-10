@@ -5,12 +5,6 @@ import material.tree.binarytree.BinaryTree;
 
 import java.util.*;
 
-/**
- * Inorder iteartor for binary trees.
- *
- * @param <T>
- * @author jvelez, JD. Quintana
- */
 public class InorderBinaryTreeIterator<E> implements Iterator<Position<E>> {
 
     BinaryTree<E> tree;
@@ -56,6 +50,7 @@ public class InorderBinaryTreeIterator<E> implements Iterator<Position<E>> {
                     this.visited.add(left);
                 }
             }
+
         } while (current != this.stack.peek());
 
         return this.stack.pop();

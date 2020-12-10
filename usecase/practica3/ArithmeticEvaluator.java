@@ -1,7 +1,6 @@
 package usecase.practica3;
 
 import material.Position;
-import material.tree.binarytree.BinaryTree;
 import material.tree.binarytree.LinkedBinaryTree;
 
 public class ArithmeticEvaluator {
@@ -46,9 +45,7 @@ public class ArithmeticEvaluator {
         return firstStarIndex;
     }
 
-    public int evaluate () {
-        return this.getValue(this.tree.root());
-    }
+    public int evaluate () { return this.getValue(this.tree.root()); }
 
     private int getValue(Position<String> p) {
         String symbol = p.getElement();

@@ -1,6 +1,5 @@
 package material.tree.iterators;
 
-import javafx.geometry.Pos;
 import material.Position;
 import material.tree.binarytree.BinaryTree;
 

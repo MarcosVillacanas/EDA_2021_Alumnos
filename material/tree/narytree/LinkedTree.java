@@ -26,14 +26,6 @@ public class LinkedTree<E> implements NAryTree<E> {
         private List<TreeNode<T>> children; // The children of the node
         private LinkedTree<T> myTree; // A reference to the tree where the node belongs
 
-        /**
-         * Constructor of the class
-         *
-         * @param t the tree where the node is stored
-         * @param e the element to store in the node
-         * @param p the parent of the node
-         * @param c the list of children of the node
-         */
         public TreeNode(T e, TreeNode<T> p, List<TreeNode<T>> c, LinkedTree<T> t) {
             this.element = e;
             this.parent = p;
@@ -46,65 +38,30 @@ public class LinkedTree<E> implements NAryTree<E> {
             return element;
         }
 
-        /**
-         * Sets the element stored at this position
-         *
-         * @param o the element to store in the node
-         */
         public final void setElement(T o) {
             element = o;
         }
 
-        /**
-         * Accesses to the list of children of this node
-         *
-         * @return the list of children
-         */
         public List<TreeNode<T>> getChildren() {
             return children;
         }
 
-        /**
-         * Sets the children of this node
-         *
-         * @param c the list of nodes to be used as children of this position
-         */
         public final void setChildren(List<TreeNode<T>> c) {
             children = c;
         }
 
-        /**
-         * Accesses to the parent of this node
-         *
-         * @return the parent of this node
-         */
         public TreeNode<T> getParent() {
             return parent;
         }
 
-        /**
-         * Sets the parent of this node
-         *
-         * @param v the node to be used as parent
-         */
         public final void setParent(TreeNode<T> v) {
             parent = v;
         }
 
-        /**
-         * Consults the tree in which this node is stored
-         *
-         * @return a reference to the tree where the node belongs
-         */
         public LinkedTree<T> getMyTree() {
             return myTree;
         }
 
-        /**
-         * Sets the tree where this node belongs
-         *
-         * @param myTree the tree where this node belongs
-         */
         public void setMyTree(LinkedTree<T> myTree) {
             this.myTree = myTree;
         }
@@ -141,37 +98,9 @@ public class LinkedTree<E> implements NAryTree<E> {
             throw new RuntimeException("Both positions are the same");
         }
         else {
-            if (node1.equals(this.root())) {
-                TreeNode<E> node2Parent = node2.getParent();
-
-                node2Parent.getChildren().remove(node2);
-                node2Parent.getChildren().add(node1);
-                node2.setParent(null);
-                this.root = node2;
-
-                node1.setParent(node2Parent);
-            }
-            else if (node2.equals(this.root())) {
-                TreeNode<E> node1Parent = node1.getParent();
-
-                node1Parent.getChildren().remove(node1);
-                node1Parent.getChildren().add(node2);
-                node1.setParent(null);
-                this.root = node1;
-
-                node2.setParent(node1Parent);
-            }
-            else {
-                TreeNode<E> node1Parent = node1.getParent();
-
-                node1Parent.getChildren().remove(node1);
-                node1Parent.getChildren().add(node2);
-                node1.setParent(node2.getParent());
-
-                node2.getParent().getChildren().remove(node2);
-                node2.getParent().getChildren().add(node1);
-                node2.setParent(node1Parent);
-            }
+            E temp = node1.getElement();
+            node1.setElement(node2.getElement());
+            node2.setElement(temp);
         }
     }
 
@@ -187,19 +116,16 @@ public class LinkedTree<E> implements NAryTree<E> {
     @Override
     public E remove(Position<E> p) {
         TreeNode<E> node = this.checkPosition(p);
-        if (this.root().equals(node)) {
-            this.root = null;
-            this.size = 0;
-        }
-        else {
+
+        if (!this.root().equals(node)) {
             node.getParent().getChildren().remove(node);
-            Iterator<Position<E>> ite = new BFSIterator<>(this, node);
-            while (ite.hasNext()) {
-                Position<E> next = ite.next();
-                TreeNode<E> descendant = this.checkPosition(next);
-                descendant.setMyTree(null);
-                this.size--;
-            }
+        }
+        Iterator<Position<E>> ite = new BFSIterator<>(this, node);
+        while (ite.hasNext()) {
+            Position<E> next = ite.next();
+            TreeNode<E> descendant = this.checkPosition(next);
+            descendant.setMyTree(null);
+            this.size--;
         }
         return node.getElement();
     }
@@ -212,12 +138,10 @@ public class LinkedTree<E> implements NAryTree<E> {
         if (nodeOrig.equals(this.root()) || nodeOrig.equals(this.root())) {
             throw new RuntimeException("Root node can't be moved");
         }
-
-        if (nodeOrig.equals(nodeDest)) {
+        else if (nodeOrig.equals(nodeDest)) {
             throw new RuntimeException("Both positions are the same");
         }
-
-        if (this.isAncestor(nodeOrig, nodeDest)) {
+        else if (this.isAncestor(nodeOrig, nodeDest)) {
             throw new RuntimeException("Target position can't be a sub tree of origin");
         }
 
@@ -227,25 +151,17 @@ public class LinkedTree<E> implements NAryTree<E> {
     }
 
     private boolean isAncestor(TreeNode<E> nodeOrig, TreeNode<E> nodeDest) {
-        Iterator<Position<E>> ite = new BFSIterator<>(this, nodeOrig);
-        while (ite.hasNext()) {
-            Position<E> next = ite.next();
-            if (nodeDest.equals(next)) {
-                return true;
-            }
+        while (!nodeDest.equals(nodeOrig) || !nodeDest.equals(this.root())) {
+            nodeDest = nodeDest.getParent();
         }
-        return false;
+        return nodeDest.equals(nodeOrig);
     }
 
     @Override
-    public int size() {
-        return this.size;
-    }
+    public int size() { return this.size; }
 
     @Override
-    public boolean isEmpty() {
-        return this.size == 0;
-    }
+    public boolean isEmpty() { return this.size == 0; }
 
     @Override
     public Position<E> root() throws RuntimeException {
@@ -271,9 +187,7 @@ public class LinkedTree<E> implements NAryTree<E> {
     }
 
     @Override
-    public boolean isInternal(Position<E> v) {
-        return !this.isLeaf(v);
-    }
+    public boolean isInternal(Position<E> v) { return !this.isLeaf(v); }
 
     @Override
     public boolean isLeaf(Position<E> v) throws RuntimeException {
@@ -318,9 +232,24 @@ public class LinkedTree<E> implements NAryTree<E> {
     }
 
     @Override
-    public Iterator<Position<E>> iterator() {
-        return new BFSIterator<>(this);
-    }
+    public Iterator<Position<E>> iterator() { return new BFSIterator<>(this); }
 
+    public void removeFrontier () {
+        if (!this.isEmpty()) {
+            Queue<Position<E>> queue = new LinkedList<>();
+            queue.add(this.root());
+            while (!queue.isEmpty()) {
+                Position<E> next = queue.poll();
+                if (this.isLeaf(next)) {
+                    this.remove(next);
+                }
+                else {
+                    for (Position<E> child : this.children(next)) {
+                        queue.add(child);
+                    }
+                }
+            }
+        }
+    }
 }
 
